@@ -346,9 +346,26 @@ const { data: prof, error: perr } = await sb
       fuelMsg.innerHTML = `<span class="err">Tankowanie zapisane, ale upload zdjęcia nie wyszedł: ${e.message}</span>`;
     }
 
+    // 3) dopisz ścieżki zdjęć do rekordu (kierowca może zmieniać tylko te pola)
+    if(odometer_photo || receipt_photo){
+      const patch = {};
+      if(odometer_photo) patch.odometer_photo = odometer_photo;
+      if(receipt_photo) patch.receipt_photo = receipt_photo;
+
+      const up2 = await sb
+        .from('fuel_entries')
+        .update(patch)
+        .eq('id', fuelEntryId);
+
+      if(up2.error){
+        fuelMsg.innerHTML = `<span class="err">Tankowanie zapisane, ale nie udało się dopiąć zdjęć do rekordu: ${up2.error.message}</span>`;
+        return;
+      }
+    }
+
     fuelMsg.innerHTML =
       `<span class="ok">Zapisano tankowanie.</span>` +
-      (odometer_photo ? ` licznik✅` : '') + (receipt_photo ? ` WZ✅` : '') +
+      (odometer_photo ? ` licznik✅` : '') + (receipt_photo ? ` WZ✅` : '');
       `<div class="muted">Następny krok: dopniemy zapis ścieżek zdjęć do rekordu (żeby dało się je otwierać w historii).</div>`;
 
     // wyczyść formularz
