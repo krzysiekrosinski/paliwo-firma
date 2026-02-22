@@ -86,8 +86,8 @@
 
     <div class="row">
       <div>
-        <label>Data i godzina (automatycznie)</label>
-        <input id="occurredAt" disabled />
+        <label>Data i godzina (automatycznie, ale można zmienić)</label>
+        <input id="occurredAt" type="datetime-local" />
       </div>
       <div>
         <label>Stan licznika (km)</label>
@@ -150,7 +150,7 @@
     <table id="histTbl" class="hide">
       <thead>
         <tr>
-          <th>Data</th><th>Licznik</th><th>Litry</th><th>l/100</th>
+          <th>Data</th><th>Licznik</th><th>Litry</th><th>Cena</th><th>Koszt</th><th>l/100</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -164,10 +164,10 @@
   let myProfile = null;
   let myVehicleId = null;
 
-  function nowIsoLocal() {
+  function nowForDateTimeLocal(){
     const d = new Date();
     const pad = n => String(n).padStart(2,'0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
   function calcCost(){
@@ -271,7 +271,8 @@
       `Zalogowany: <b>${myProfile.full_name}</b> <span class="pill">${myProfile.role}</span>` +
       (myVehicleId ? ` • pojazd: <span class="pill">${myVehicleId.slice(0,8)}…</span>` : '');
 
-    document.getElementById('occurredAt').value = nowIsoLocal();
+    // auto, ale edytowalne
+    document.getElementById('occurredAt').value = nowForDateTimeLocal();
 
     if(myProfile.role === 'driver'){
       await loadStats();
@@ -287,7 +288,12 @@
     const fuelMsg = document.getElementById('fuelMsg');
     fuelMsg.textContent = 'Zapisywanie...';
 
-    const occurred_at = new Date().toISOString();
+    // bierzemy z pola (edytowalne). jeśli puste -> teraz
+    const occurredAtInput = document.getElementById('occurredAt').value;
+    const occurred_at = occurredAtInput
+      ? new Date(occurredAtInput).toISOString()
+      : new Date().toISOString();
+
     const odometer_km = parseInt(document.getElementById('odo').value || '0', 10);
     const liters = parseFloat(document.getElementById('liters').value || '0');
     const price_per_l = parseFloat(document.getElementById('ppl').value || '0');
@@ -365,6 +371,7 @@
     calcCost();
     document.getElementById('photoOdo').value = '';
     document.getElementById('photoRec').value = '';
+    document.getElementById('occurredAt').value = nowForDateTimeLocal();
 
     await loadStats();
     await loadHistory();
@@ -427,11 +434,11 @@
     msg.textContent = '';
     tbl.classList.remove('hide');
 
-    const rows = (data || []); // DESC: [najnowsze, ..., najstarsze]
+    const rows = (data || []);
 
     for(let i = 0; i < rows.length; i++){
       const r = rows[i];
-      const prev = rows[i + 1]; // starsze (poprzednie w czasie)
+      const prev = rows[i + 1]; // starsze tankowanie
 
       const d = new Date(r.occurred_at);
       const ds = d.toLocaleString('pl-PL');
