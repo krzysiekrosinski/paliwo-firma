@@ -11,7 +11,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b1020;color:#eaf0ff;font-family:system-ui;overflow-x:hidden}
 .wrap{max-width:1000px;margin:auto;padding:12px}
-.card{background:#121a33;border:1px solid #23305a;border-radius:16px;padding:14px;margin:12px 0}
+.card{background:#121a33;border:1px solid #23305a;border-radius:16px;padding:14px;margin:12px 0;overflow:hidden}
 h2{margin:6px 0 4px}
 h3{margin:0 0 10px}
 .small{color:#b8c7ff;font-size:13px;margin-bottom:10px}
@@ -21,18 +21,16 @@ h3{margin:0 0 10px}
 label{font-size:13px;color:#b8c7ff}
 
 input,button{
-width:100%;
-padding:12px;
-border-radius:12px;
-border:1px solid #2a3a6b;
-background:#0b1020;
-color:#eaf0ff;
-font-size:16px
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #2a3a6b;
+  background:#0b1020;
+  color:#eaf0ff;
+  font-size:16px;
 }
 
-input[type="file"]{
-padding:8px
-}
+input[type="file"]{ padding:8px }
 
 button{border:none;background:#4b7dff;cursor:pointer}
 button.secondary{background:#2a3a6b}
@@ -48,7 +46,7 @@ th,td{border-bottom:1px solid #23305a;padding:10px 8px;text-align:left;white-spa
 .hide{display:none}
 
 @media(max-width:768px){
-.row{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -61,287 +59,404 @@ th,td{border-bottom:1px solid #23305a;padding:10px 8px;text-align:left;white-spa
 
 <!-- KONFIG -->
 <div class="card" id="cfgCard">
-<h3>Konfiguracja</h3>
-<div class="row">
-<div class="stack">
-<label>Supabase URL</label>
-<input id="sbUrl">
-</div>
-<div class="stack">
-<label>Publishable key</label>
-<input id="sbKey">
-</div>
-</div>
-<button onclick="saveCfg()">Zapisz</button>
+  <h3>Konfiguracja</h3>
+  <div class="row">
+    <div class="stack">
+      <label>Supabase URL</label>
+      <input id="sbUrl" placeholder="https://xxxxx.supabase.co">
+    </div>
+    <div class="stack">
+      <label>Publishable key</label>
+      <input id="sbKey" placeholder="sb_publishable_...">
+    </div>
+  </div>
+  <button onclick="saveCfg()">Zapisz</button>
 </div>
 
 <!-- LOGOWANIE -->
 <div class="card hide" id="authCard">
-<h3>Logowanie</h3>
-<div class="row">
-<input id="email" placeholder="Email">
-<input id="pass" type="password" placeholder="Hasło">
-</div>
-<div class="row">
-<button onclick="login()">Zaloguj</button>
-<button class="secondary" onclick="logout()">Wyloguj</button>
-</div>
-<div id="authMsg" class="msg"></div>
+  <h3>Logowanie</h3>
+  <div class="row">
+    <input id="email" placeholder="Email">
+    <input id="pass" type="password" placeholder="Hasło">
+  </div>
+  <div class="row">
+    <button onclick="login()">Zaloguj</button>
+    <button class="secondary" onclick="logout()">Wyloguj</button>
+  </div>
+  <div id="authMsg" class="msg"></div>
 </div>
 
 <!-- PANEL -->
 <div class="card hide" id="appCard">
-<div style="display:flex;justify-content:space-between;flex-wrap:wrap">
-<div id="who"></div>
-<button class="secondary" onclick="logout()">Wyloguj</button>
-</div>
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <div id="who"></div>
+    <button class="secondary" onclick="logout()">Wyloguj</button>
+  </div>
 </div>
 
 <!-- DODAJ TANKOWANIE -->
 <div class="card hide" id="fuelCard">
-<h3>Dodaj tankowanie</h3>
+  <h3>Dodaj tankowanie</h3>
 
-<div class="stack">
+  <div class="stack">
 
-<label>Data i godzina</label>
-<input id="occurredAt" type="datetime-local">
+    <label>Data</label>
+    <input id="occurredDate" type="date">
 
-<label>Stan licznika (km)</label>
-<input id="odo" type="number">
+    <label>Godzina</label>
+    <input id="occurredTime" type="time">
 
-<div class="row">
-<div class="stack">
-<label>Litry</label>
-<input id="liters" type="number" step="0.01">
-</div>
-<div class="stack">
-<label>Cena za litr</label>
-<input id="ppl" type="number" step="0.01">
-</div>
-</div>
+    <label>Stan licznika (km)</label>
+    <input id="odo" type="number" inputmode="numeric">
 
-<label>Zdjęcie licznika</label>
-<input id="photoOdo" type="file" accept="image/*" capture="environment">
+    <div class="row">
+      <div class="stack">
+        <label>Litry</label>
+        <input id="liters" type="number" step="0.01" inputmode="decimal">
+      </div>
+      <div class="stack">
+        <label>Cena za litr</label>
+        <input id="ppl" type="number" step="0.01" inputmode="decimal">
+      </div>
+    </div>
 
-<label>Zdjęcie WZ</label>
-<input id="photoRec" type="file" accept="image/*" capture="environment">
+    <label>Zdjęcie licznika</label>
+    <input id="photoOdo" type="file" accept="image/*" capture="environment">
 
-<button onclick="addFuel()">Zapisz tankowanie</button>
-<div id="fuelMsg" class="msg"></div>
+    <label>Zdjęcie WZ</label>
+    <input id="photoRec" type="file" accept="image/*" capture="environment">
 
-</div>
+    <button onclick="addFuel()">Zapisz tankowanie</button>
+    <div id="fuelMsg" class="msg"></div>
+
+  </div>
 </div>
 
 <!-- HISTORIA -->
 <div class="card hide" id="histCard">
-<h3>Tankowania (ostatnie 50)</h3>
-<div id="histMsg" class="msg"></div>
-<div class="table-wrapper">
-<table id="histTbl" class="hide">
-<thead>
-<tr>
-<th>Data</th>
-<th>Licznik</th>
-<th>Litry</th>
-<th>l/100</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+  <h3>Tankowania (ostatnie 50)</h3>
+  <div id="histMsg" class="msg"></div>
+
+  <div class="table-wrapper">
+    <table id="histTbl" class="hide">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Licznik</th>
+          <th>Litry</th>
+          <th>l/100</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
+
+<!-- SERWIS (TYLKO ADMIN) -->
+<div class="card hide" id="serviceCard">
+  <h3>Serwis pojazdu (Admin)</h3>
+
+  <div class="stack">
+    <div class="row">
+      <div class="stack">
+        <label>Data</label>
+        <input id="serviceDate" type="date">
+      </div>
+      <div class="stack">
+        <label>Stan licznika (km)</label>
+        <input id="serviceOdo" type="number" inputmode="numeric">
+      </div>
+    </div>
+
+    <div class="stack">
+      <label>Opis</label>
+      <input id="serviceDesc" placeholder="np. wymiana oleju + filtry">
+    </div>
+
+    <div class="stack">
+      <label>Koszt (opcjonalnie)</label>
+      <input id="serviceCost" type="number" step="0.01" inputmode="decimal" placeholder="np. 850.00">
+    </div>
+
+    <button onclick="addService()">Dodaj serwis</button>
+    <div id="serviceMsg" class="msg"></div>
+  </div>
 </div>
 
 </div>
 
 <script>
 let sb=null,myProfile=null,myVehicleId=null;
+
 const VEHICLE_1='33474aad-2d3c-4777-80f7-62eb16ce4434';
 const VEHICLE_2='4b8b8534-3f12-41e1-af1a-24fb4f710cb3';
 
-function nowLocal(){
-const d=new Date();
-const p=n=>String(n).padStart(2,'0');
-return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-
 function saveCfg(){
-localStorage.setItem('SB_URL',sbUrl.value.trim());
-localStorage.setItem('SB_KEY',sbKey.value.trim());
-location.reload();
+  localStorage.setItem('SB_URL',sbUrl.value.trim());
+  localStorage.setItem('SB_KEY',sbKey.value.trim());
+  location.reload();
 }
 
 function loadCfg(){
-const url=localStorage.getItem('SB_URL')||'';
-const key=localStorage.getItem('SB_KEY')||'';
-sbUrl.value=url;sbKey.value=key;
-return{url,key};
+  const url=localStorage.getItem('SB_URL')||'';
+  const key=localStorage.getItem('SB_KEY')||'';
+  sbUrl.value=url;sbKey.value=key;
+  return{url,key};
 }
 
 function show(id,on=true){
-document.getElementById(id).classList.toggle('hide',!on);
+  document.getElementById(id).classList.toggle('hide',!on);
+}
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function setDefaultDateTime(){
+  const d=new Date();
+  const yyyy=d.getFullYear();
+  const mm=pad(d.getMonth()+1);
+  const dd=pad(d.getDate());
+  const hh=pad(d.getHours());
+  const mi=pad(d.getMinutes());
+  occurredDate.value = `${yyyy}-${mm}-${dd}`;
+  occurredTime.value = `${hh}:${mi}`;
+}
+
+function buildOccurredISO(){
+  // łączymy date + time -> ISO (UTC)
+  const date = occurredDate.value;
+  const time = occurredTime.value || '00:00';
+  if(!date) return new Date().toISOString();
+  // tworzymy lokalny datetime, a potem ISO
+  const dt = new Date(`${date}T${time}:00`);
+  return dt.toISOString();
 }
 
 async function init(){
-const{url,key}=loadCfg();
-if(!url||!key)return;
-show('cfgCard',false);
-show('authCard',true);
-sb=window.supabase.createClient(url,key);
-const{data:{session}}=await sb.auth.getSession();
-if(session)afterLogin();
+  const{url,key}=loadCfg();
+  if(!url||!key)return;
+
+  show('cfgCard',false);
+  show('authCard',true);
+
+  sb=window.supabase.createClient(url,key);
+
+  const{data:{session}}=await sb.auth.getSession();
+  if(session) afterLogin();
 }
 
 async function login(){
-const{error}=await sb.auth.signInWithPassword({email:email.value,password:pass.value});
-if(error){authMsg.innerHTML=`<span class="err">${error.message}</span>`;return;}
-afterLogin();
+  const{error}=await sb.auth.signInWithPassword({email:email.value,password:pass.value});
+  if(error){authMsg.innerHTML=`<span class="err">${error.message}</span>`;return;}
+  afterLogin();
 }
 
 async function logout(){
-if(sb)await sb.auth.signOut();
-show('appCard',false);
-show('fuelCard',false);
-show('histCard',false);
-show('authCard',true);
+  if(sb) await sb.auth.signOut();
+  show('appCard',false);
+  show('fuelCard',false);
+  show('histCard',false);
+  show('serviceCard',false);
+  show('authCard',true);
 }
 
 async function afterLogin(){
-const{data:{user}}=await sb.auth.getUser();
-const{data:prof}=await sb.from('profiles').select('id,full_name,role').eq('id',user.id).single();
-myProfile=prof;
-const{data:vId}=await sb.rpc('my_vehicle_id');
-myVehicleId=vId||null;
+  const{data:{user}}=await sb.auth.getUser();
 
-show('authCard',false);
-show('appCard',true);
-show('fuelCard',true);
-show('histCard',true);
+  const{data:prof,error:perr}=await sb
+    .from('profiles')
+    .select('id,full_name,role')
+    .eq('id',user.id)
+    .single();
 
-who.innerHTML=`Zalogowany: <b>${myProfile.full_name}</b>`;
-occurredAt.value=nowLocal();
-loadHistory();
+  if(perr){
+    authMsg.innerHTML=`<span class="err">Brak profilu w tabeli profiles dla tego konta.</span>`;
+    return;
+  }
+
+  myProfile=prof;
+
+  const{data:vId}=await sb.rpc('my_vehicle_id');
+  myVehicleId=vId||null;
+
+  show('authCard',false);
+  show('appCard',true);
+  show('fuelCard',true);
+  show('histCard',true);
+
+  // serwis tylko admin
+  show('serviceCard', myProfile.role === 'admin');
+
+  who.innerHTML=`Zalogowany: <b>${myProfile.full_name}</b>`;
+  setDefaultDateTime();
+
+  await loadHistory();
 }
 
 async function addFuel(){
-fuelMsg.textContent='Zapisywanie...';
+  fuelMsg.textContent='Zapisywanie...';
 
-const occurred=occurredAt.value?new Date(occurredAt.value).toISOString():new Date().toISOString();
-const newOdo=parseInt(odo.value||'0');
-const l=parseFloat(liters.value||'0');
-const price=parseFloat(ppl.value||'0');
+  const occurred = buildOccurredISO();
+  const newOdo = parseInt(odo.value||'0',10);
+  const l = parseFloat(liters.value||'0');
+  const price = parseFloat(ppl.value||'0');
 
-if(!newOdo||l<=0){
-fuelMsg.innerHTML='<span class="err">Uzupełnij licznik i litry.</span>';
-return;
-}
+  if(!newOdo || l<=0){
+    fuelMsg.innerHTML='<span class="err">Uzupełnij licznik i litry.</span>';
+    return;
+  }
 
-// blokada cofnięcia licznika
-const{data:lastEntry}=await sb.from('fuel_entries')
-.select('odometer_km')
-.eq('vehicle_id',myVehicleId)
-.order('occurred_at',{ascending:false})
-.limit(1);
+  // blokada cofnięcia licznika
+  const{data:lastEntry}=await sb.from('fuel_entries')
+    .select('odometer_km')
+    .eq('vehicle_id',myVehicleId)
+    .order('occurred_at',{ascending:false})
+    .limit(1);
 
-if(lastEntry&&lastEntry.length>0){
-if(newOdo<lastEntry[0].odometer_km){
-fuelMsg.innerHTML=`<span class="err">Nie można cofnąć licznika.</span>`;
-return;
-}
-}
+  if(lastEntry && lastEntry.length>0){
+    if(newOdo < lastEntry[0].odometer_km){
+      fuelMsg.innerHTML=`<span class="err">Nie można cofnąć licznika. Ostatni stan: ${lastEntry[0].odometer_km} km</span>`;
+      return;
+    }
+  }
 
-const{data, error}=await sb.from('fuel_entries')
-.insert({
-vehicle_id:myVehicleId,
-driver_id:myProfile.id,
-occurred_at:occurred,
-odometer_km:newOdo,
-liters:l,
-price_per_l:price
-})
-.select('id')
-.single();
+  const{data, error}=await sb.from('fuel_entries')
+    .insert({
+      vehicle_id:myVehicleId,
+      driver_id:myProfile.id,
+      occurred_at:occurred,
+      odometer_km:newOdo,
+      liters:l,
+      price_per_l:price
+    })
+    .select('id')
+    .single();
 
-if(error){
-fuelMsg.innerHTML=`<span class="err">${error.message}</span>`;
-return;
-}
+  if(error){
+    fuelMsg.innerHTML=`<span class="err">${error.message}</span>`;
+    return;
+  }
 
-const fuelId=data.id;
+  const fuelId=data.id;
 
-// upload zdjęć
-const odoFile=photoOdo.files[0];
-const recFile=photoRec.files[0];
+  // upload zdjęć
+  const odoFile=photoOdo.files[0];
+  const recFile=photoRec.files[0];
 
-if(odoFile){
-await sb.storage.from('fuel-photos')
-.upload(`${myVehicleId}/odometer/${fuelId}.jpg`,odoFile,{upsert:false});
-}
+  try{
+    if(odoFile){
+      const up1 = await sb.storage.from('fuel-photos')
+        .upload(`${myVehicleId}/odometer/${fuelId}.jpg`, odoFile, { upsert:false });
+      if(up1.error) throw up1.error;
+    }
+    if(recFile){
+      const up2 = await sb.storage.from('fuel-photos')
+        .upload(`${myVehicleId}/receipt/${fuelId}.jpg`, recFile, { upsert:false });
+      if(up2.error) throw up2.error;
+    }
+  }catch(e){
+    // tankowanie zapisane, ale zdjęcie nie
+    fuelMsg.innerHTML=`<span class="err">Tankowanie zapisane, ale nie udało się wysłać zdjęcia: ${e.message}</span>`;
+    await loadHistory();
+    return;
+  }
 
-if(recFile){
-await sb.storage.from('fuel-photos')
-.upload(`${myVehicleId}/receipt/${fuelId}.jpg`,recFile,{upsert:false});
-}
+  fuelMsg.innerHTML='<span class="ok">Zapisano tankowanie</span>';
 
-fuelMsg.innerHTML='<span class="ok">Zapisano tankowanie</span>';
+  odo.value='';
+  liters.value='';
+  ppl.value='';
+  photoOdo.value='';
+  photoRec.value='';
+  setDefaultDateTime();
 
-odo.value='';
-liters.value='';
-ppl.value='';
-photoOdo.value='';
-photoRec.value='';
-occurredAt.value=nowLocal();
-
-loadHistory();
+  await loadHistory();
 }
 
 async function loadHistory(){
-const{data,error}=await sb.from('fuel_entries')
-.select('vehicle_id,occurred_at,odometer_km,liters')
-.order('occurred_at',{ascending:false})
-.limit(50);
+  histMsg.textContent='Ładowanie...';
 
-if(error){
-histMsg.innerHTML=`<span class="err">${error.message}</span>`;
-return;
+  const{data,error}=await sb.from('fuel_entries')
+    .select('vehicle_id,occurred_at,odometer_km,liters')
+    .order('occurred_at',{ascending:false})
+    .limit(50);
+
+  if(error){
+    histMsg.innerHTML=`<span class="err">${error.message}</span>`;
+    return;
+  }
+
+  histMsg.textContent='';
+  histTbl.classList.remove('hide');
+  const tbody=histTbl.querySelector('tbody');
+  tbody.innerHTML='';
+
+  for(let i=0;i<data.length;i++){
+    const r=data[i];
+    const prev=data[i+1];
+
+    let l100=null;
+    if(prev){
+      const km=r.odometer_km-prev.odometer_km;
+      if(km>0) l100=(r.liters/km)*100;
+    }
+
+    let threshold=null;
+    if(r.vehicle_id===VEHICLE_1) threshold=7.5;
+    if(r.vehicle_id===VEHICLE_2) threshold=9.0;
+
+    let l100Html='—';
+    if(l100!=null){
+      const val=l100.toFixed(2);
+      if(threshold!=null && l100>threshold){
+        l100Html=`<span style="color:#ff4d4d;font-weight:700">${val}</span>`;
+      }else{
+        l100Html=`<span style="font-weight:700">${val}</span>`;
+      }
+    }
+
+    tbody.insertAdjacentHTML('beforeend',`
+      <tr>
+        <td>${new Date(r.occurred_at).toLocaleDateString('pl-PL')}</td>
+        <td>${r.odometer_km}</td>
+        <td>${r.liters}</td>
+        <td>${l100Html}</td>
+      </tr>
+    `);
+  }
 }
 
-histTbl.classList.remove('hide');
-const tbody=histTbl.querySelector('tbody');
-tbody.innerHTML='';
+async function addService(){
+  serviceMsg.textContent='Zapisywanie...';
 
-for(let i=0;i<data.length;i++){
-const r=data[i];
-const prev=data[i+1];
+  const date = serviceDate.value;
+  const odoVal = parseInt(serviceOdo.value||'0',10);
+  const desc = serviceDesc.value.trim();
+  const cost = serviceCost.value ? parseFloat(serviceCost.value) : null;
 
-let l100=null;
-if(prev){
-const km=r.odometer_km-prev.odometer_km;
-if(km>0)l100=(r.liters/km)*100;
-}
+  if(!date || !odoVal || !desc){
+    serviceMsg.innerHTML=`<span class="err">Uzupełnij datę, licznik i opis.</span>`;
+    return;
+  }
 
-let threshold=null;
-if(r.vehicle_id===VEHICLE_1)threshold=7.5;
-if(r.vehicle_id===VEHICLE_2)threshold=9.0;
+  const { error } = await sb.from('vehicle_services').insert({
+    vehicle_id: myVehicleId,
+    service_date: date,
+    odometer_km: odoVal,
+    description: desc,
+    cost: cost
+  });
 
-let l100Html='—';
-if(l100!=null){
-const val=l100.toFixed(2);
-if(threshold&&l100>threshold){
-l100Html=`<span style="color:#ff4d4d;font-weight:700">${val}</span>`;
-}else{
-l100Html=`<b>${val}</b>`;
-}
-}
+  if(error){
+    serviceMsg.innerHTML=`<span class="err">${error.message}</span>`;
+    return;
+  }
 
-tbody.insertAdjacentHTML('beforeend',`
-<tr>
-<td>${new Date(r.occurred_at).toLocaleDateString('pl-PL')}</td>
-<td>${r.odometer_km}</td>
-<td>${r.liters}</td>
-<td>${l100Html}</td>
-</tr>
-`);
-}
+  serviceMsg.innerHTML=`<span class="ok">Dodano serwis</span>`;
+  serviceDate.value='';
+  serviceOdo.value='';
+  serviceDesc.value='';
+  serviceCost.value='';
 }
 
 init();
