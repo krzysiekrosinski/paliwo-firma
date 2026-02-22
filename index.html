@@ -160,7 +160,6 @@
 </div>
 
 <script>
-  // UWAGA: używamy zmiennej "sb", żeby nie kolidować z niczym innym
   let sb = null;
   let myProfile = null;
   let myVehicleId = null;
@@ -209,7 +208,6 @@
 
     sb = window.supabase.createClient(url, key);
 
-    // jeśli jest sesja – wznów
     const { data: { session } } = await sb.auth.getSession();
     if(session) await afterLogin();
   }
@@ -245,14 +243,13 @@
   }
 
   async function afterLogin(){
-    // pobierz profil (rola + nazwa)
     const { data: { user } } = await sb.auth.getUser();
 
-const { data: prof, error: perr } = await sb
-  .from('profiles')
-  .select('id, full_name, role')
-  .eq('id', user.id)
-  .single();
+    const { data: prof, error: perr } = await sb
+      .from('profiles')
+      .select('id, full_name, role')
+      .eq('id', user.id)
+      .single();
 
     if(perr){
       document.getElementById('authMsg').innerHTML =
@@ -261,7 +258,6 @@ const { data: prof, error: perr } = await sb
     }
     myProfile = prof;
 
-    // pobierz vehicle_id kierowcy przez RPC (my_vehicle_id)
     const { data: vId } = await sb.rpc('my_vehicle_id');
     myVehicleId = vId || null;
 
@@ -275,7 +271,6 @@ const { data: prof, error: perr } = await sb
       `Zalogowany: <b>${myProfile.full_name}</b> <span class="pill">${myProfile.role}</span>` +
       (myVehicleId ? ` • pojazd: <span class="pill">${myVehicleId.slice(0,8)}…</span>` : '');
 
-    // ustaw domyślną datę/godzinę
     document.getElementById('occurredAt').value = nowIsoLocal();
 
     if(myProfile.role === 'driver'){
@@ -283,7 +278,7 @@ const { data: prof, error: perr } = await sb
       await loadHistory();
     } else {
       document.getElementById('appCard').insertAdjacentHTML('beforeend',
-        `<div class="muted" style="margin-top:8px">Admin panel rozbudujemy za chwilę (pojazdy, przypisania, serwis). Teraz testujemy część kierowcy.</div>`
+        `<div class="muted" style="margin-top:8px">Admin panel rozbudujemy za chwilę (pojazdy, przypisania, serwis).</div>`
       );
     }
   }
@@ -292,7 +287,7 @@ const { data: prof, error: perr } = await sb
     const fuelMsg = document.getElementById('fuelMsg');
     fuelMsg.textContent = 'Zapisywanie...';
 
-    const occurred_at = new Date().toISOString(); // automatycznie (UTC)
+    const occurred_at = new Date().toISOString();
     const odometer_km = parseInt(document.getElementById('odo').value || '0', 10);
     const liters = parseFloat(document.getElementById('liters').value || '0');
     const price_per_l = parseFloat(document.getElementById('ppl').value || '0');
@@ -302,7 +297,6 @@ const { data: prof, error: perr } = await sb
       return;
     }
 
-    // 1) insert tankowania i weź id
     const { data, error } = await sb
       .from('fuel_entries')
       .insert({
@@ -323,7 +317,6 @@ const { data: prof, error: perr } = await sb
 
     const fuelEntryId = data.id;
 
-    // 2) upload zdjęć (jeśli wybrane)
     const odoFile = document.getElementById('photoOdo').files[0] || null;
     const recFile = document.getElementById('photoRec').files[0] || null;
 
@@ -346,7 +339,6 @@ const { data: prof, error: perr } = await sb
       fuelMsg.innerHTML = `<span class="err">Tankowanie zapisane, ale upload zdjęcia nie wyszedł: ${e.message}</span>`;
     }
 
-    // 3) dopisz ścieżki zdjęć do rekordu (kierowca może zmieniać tylko te pola)
     if(odometer_photo || receipt_photo){
       const patch = {};
       if(odometer_photo) patch.odometer_photo = odometer_photo;
@@ -366,9 +358,7 @@ const { data: prof, error: perr } = await sb
     fuelMsg.innerHTML =
       `<span class="ok">Zapisano tankowanie.</span>` +
       (odometer_photo ? ` licznik✅` : '') + (receipt_photo ? ` WZ✅` : '');
-      `<div class="muted">Następny krok: dopniemy zapis ścieżek zdjęć do rekordu (żeby dało się je otwierać w historii).</div>`;
 
-    // wyczyść formularz
     document.getElementById('odo').value = '';
     document.getElementById('liters').value = '';
     document.getElementById('ppl').value = '';
@@ -425,7 +415,7 @@ const { data: prof, error: perr } = await sb
     const { data, error } = await sb
       .from('fuel_entries')
       .select('occurred_at, odometer_km, liters, price_per_l, total_cost')
-      .order('occurred_at', { ascending: false })
+      .order('occurred_at', { ascending: false }) // najnowsze na górze
       .limit(50);
 
     if(error){
@@ -437,37 +427,22 @@ const { data: prof, error: perr } = await sb
     msg.textContent = '';
     tbl.classList.remove('hide');
 
-    let prevOdo = null;
-
-    const rows = (data || []); // to jest DESC: najnowsze -> najstarsze
+    const rows = (data || []); // DESC: [najnowsze, ..., najstarsze]
 
     for(let i = 0; i < rows.length; i++){
       const r = rows[i];
-      const prev = rows[i + 1]; // poprzednie tankowanie w czasie (starsze)
+      const prev = rows[i + 1]; // starsze (poprzednie w czasie)
 
       const d = new Date(r.occurred_at);
       const ds = d.toLocaleString('pl-PL');
 
       let l100 = '';
       if(prev){
-        const km = r.odometer_km - prev.odometer_km; // różnica km od poprzedniego tankowania
+        const km = r.odometer_km - prev.odometer_km;
         if(km > 0){
           l100 = ((Number(r.liters) / km) * 100).toFixed(2);
         }
       }
-
-      body.insertAdjacentHTML('beforeend', `
-        <tr>
-          <td>${ds}</td>
-          <td>${r.odometer_km}</td>
-          <td>${r.liters}</td>
-          <td>${r.price_per_l}</td>
-          <td><b>${r.total_cost}</b></td>
-          <td><b>${l100}</b></td>
-        </tr>
-      `);
-    }
-      prevOdo = r.odometer_km;
 
       body.insertAdjacentHTML('beforeend', `
         <tr>
