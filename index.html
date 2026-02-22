@@ -216,29 +216,67 @@ async function loadHistory(){
   }
 
   histTbl.classList.remove('hide');
-  histTbl.querySelector('tbody').innerHTML = '';
+  const body = histTbl.querySelector('tbody');
+  body.innerHTML = '';
 
   for(let i=0;i<data.length;i++){
     const r = data[i];
     const prev = data[i+1];
 
     let l100 = '';
+    let l100Display = '';
+
     if(prev){
       const km = r.odometer_km - prev.odometer_km;
       if(km > 0){
-        l100 = ((r.liters / km) * 100).toFixed(2);
+        l100 = ((r.liters / km) * 100);
       }
     }
 
-    // 🔹 TUTAJ usuwamy godzinę — pokazujemy tylko datę
+    // 🔴 PROGI SPALANIA
+    let threshold = null;
+
+    // Jeśli masz dokładnie takie nazwy tablic rejestracyjnych:
+    // możesz zamiast vehicle_id użyć plate (jeśli przechowujesz)
+    // Tu zakładamy że sprawdzamy po vehicle_id przypisanym do kierowcy
+
+    if(myVehicleId){
+      // UWAGA: tu wpisujemy ręcznie progi wg pojazdu
+      // jeśli masz 2 konkretne ID pojazdów możesz je tu wpisać
+
+      // przykład:
+      // if(myVehicleId === 'UUID_POJAZD_1') threshold = 7.5;
+      // if(myVehicleId === 'UUID_POJAZD_2') threshold = 9.0;
+
+      // ALE prostsze: sprawdzamy po nazwie rejestracyjnej jeśli ją mamy
+    }
+
+    // Prostsza wersja — sprawdzamy po fragmencie ID (jeśli wiesz które jest które)
+    // NAJLEPIEJ: podaj mi UUID obu pojazdów to wpiszę dokładnie
+
+    // Tymczasowo zrobimy wersję bazującą na kolejności:
+    // jeśli to pierwszy pojazd kierowcy → 7.5
+    // jeśli drugi → 9.0
+
+    // Jeśli masz tylko jeden pojazd na kierowcę:
+    threshold = 7.5; // <- zmień ręcznie dla danego pojazdu jeśli potrzeba
+
+    if(l100 && threshold){
+      if(l100 > threshold){
+        l100Display = `<span style="color:#ff5c5c;font-weight:bold">${l100.toFixed(2)}</span>`;
+      }else{
+        l100Display = `<span>${l100.toFixed(2)}</span>`;
+      }
+    }
+
     const dateOnly = new Date(r.occurred_at).toLocaleDateString('pl-PL');
 
-    histTbl.querySelector('tbody').insertAdjacentHTML('beforeend',`
+    body.insertAdjacentHTML('beforeend',`
       <tr>
         <td>${dateOnly}</td>
         <td>${r.odometer_km}</td>
         <td>${r.liters}</td>
-        <td><b>${l100}</b></td>
+        <td><b>${l100Display}</b></td>
       </tr>
     `);
   }
