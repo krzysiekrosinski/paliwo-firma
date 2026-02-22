@@ -4,13 +4,9 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title>Paliwo – Firma</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* =========================
-   Premium UI (mobile-first)
-   ========================= */
 *{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; width:100%; overflow-x:hidden; }
 
@@ -18,12 +14,10 @@ html,body{ margin:0; padding:0; width:100%; overflow-x:hidden; }
   --bg0:#070a15;
   --bg1:#0b1020;
   --card:rgba(18,26,51,.78);
-  --card2:rgba(14,20,40,.72);
   --border:rgba(90,120,220,.25);
   --border2:rgba(120,160,255,.22);
   --text:#eaf0ff;
   --muted:#a9baf3;
-  --muted2:#7f94d8;
   --brand:#4b7dff;
   --brand2:#2a3a6b;
   --ok:#8dffb0;
@@ -42,50 +36,26 @@ body{
     linear-gradient(180deg, var(--bg0), var(--bg1));
 }
 
-/* safe areas */
 .safe{
   padding-left: max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
 }
 
-.wrap{
-  max-width:980px;
-  margin:0 auto;
-  padding:14px 12px 40px;
-}
+.wrap{ max-width:1100px; margin:0 auto; padding:14px 12px 40px; }
 
-/* header */
 .header{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:12px;
+  display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px;
 }
-.title{
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
+.title{ display:flex; gap:10px; align-items:center; }
 .logo{
   width:34px;height:34px;border-radius:12px;
   background:linear-gradient(135deg, rgba(75,125,255,.95), rgba(120,90,255,.75));
   box-shadow: 0 10px 26px rgba(75,125,255,.25);
-  display:grid;place-items:center;
-  font-weight:900;
+  display:grid;place-items:center; font-weight:900;
 }
-h1{
-  font-size:26px;
-  margin:0;
-  letter-spacing:.2px;
-}
-.sub{
-  margin:6px 0 0;
-  font-size:13px;
-  color:var(--muted);
-}
+h1{ font-size:26px; margin:0; letter-spacing:.2px; }
+.sub{ margin:6px 0 0; font-size:13px; color:var(--muted); }
 
-/* card */
 .card{
   background:var(--card);
   border:1px solid var(--border);
@@ -96,40 +66,20 @@ h1{
   overflow:hidden;
   margin:12px 0;
 }
-.cardInner{
-  padding:14px;
-}
-.cardTitle{
-  margin:0 0 10px;
-  font-size:18px;
-  letter-spacing:.2px;
-}
+.cardInner{ padding:14px; }
+.cardTitle{ margin:0 0 10px; font-size:18px; letter-spacing:.2px; }
 .hr{
   height:1px;
   background:linear-gradient(90deg, transparent, rgba(120,160,255,.25), transparent);
   margin:12px 0;
 }
 
-/* layout helpers */
-.grid2{
-  display:grid;
-  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-  gap:10px;
-}
-.stack{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
+.grid2{ display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap:10px; }
+.grid3{ display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap:10px; }
+.stack{ display:flex; flex-direction:column; gap:10px; }
 
-/* labels */
-label{
-  font-size:12.5px;
-  color:var(--muted);
-  margin:2px 0 -4px;
-}
+label{ font-size:12.5px; color:var(--muted); margin:2px 0 -4px; }
 
-/* inputs */
 .input{
   width:100%;
   min-width:0;
@@ -144,15 +94,12 @@ label{
 }
 .input:focus{
   border-color: rgba(90,140,255,.55);
-  box-shadow:
-    0 0 0 4px rgba(75,125,255,.15),
-    inset 0 0 0 1px rgba(0,0,0,.08);
+  box-shadow: 0 0 0 4px rgba(75,125,255,.15), inset 0 0 0 1px rgba(0,0,0,.08);
 }
 
-/* iOS date/time overflow fix (critical) */
+/* iOS date/time overflow fix */
 input[type="date"].input,
-input[type="time"].input,
-input[type="datetime-local"].input{
+input[type="time"].input{
   width:100% !important;
   max-width:100% !important;
   min-width:0 !important;
@@ -161,12 +108,7 @@ input[type="datetime-local"].input{
   background-clip: padding-box;
 }
 
-/* buttons */
-.btnRow{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
+.btnRow{ display:flex; gap:10px; flex-wrap:wrap; }
 .btn{
   width:100%;
   border:none;
@@ -185,43 +127,30 @@ input[type="datetime-local"].input{
   box-shadow:none;
   border:1px solid rgba(120,160,255,.20);
 }
+.btn.small{ width:auto; padding:9px 12px; border-radius:14px; font-size:14px; }
 
-/* messages */
 .msg{ margin-top:10px; font-size:14px; color:var(--muted); }
 .msg .ok{ color:var(--ok); font-weight:700; }
 .msg .err{ color:var(--err); font-weight:700; }
 
-/* top user strip */
 .userStrip{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  flex-wrap:wrap;
+  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
 }
 .pill{
-  display:inline-flex;
-  gap:8px;
-  align-items:center;
-  padding:8px 10px;
-  border-radius:999px;
+  display:inline-flex; gap:8px; align-items:center;
+  padding:8px 10px; border-radius:999px;
   background:rgba(8,12,26,.55);
   border:1px solid rgba(120,160,255,.18);
-  color:var(--muted);
-  font-size:13px;
+  color:var(--muted); font-size:13px;
 }
 .pill b{ color:var(--text); }
 
-/* file inputs premium */
 .fileBox{
   border:1px dashed rgba(120,160,255,.30);
   background:rgba(8,12,26,.50);
   border-radius:16px;
   padding:12px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
 }
 .fileBox .name{
   color:var(--muted);
@@ -231,9 +160,7 @@ input[type="datetime-local"].input{
   white-space:nowrap;
 }
 .fileBtn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
+  display:inline-flex; align-items:center; justify-content:center;
   padding:10px 12px;
   border-radius:14px;
   border:1px solid rgba(120,160,255,.22);
@@ -244,24 +171,15 @@ input[type="datetime-local"].input{
   user-select:none;
   flex:0 0 auto;
 }
-.fileInput{
-  position:absolute;
-  left:-9999px;
-  width:1px;height:1px;
-}
+.fileInput{ position:absolute; left:-9999px; width:1px; height:1px; }
 
-/* table */
 .tableWrap{
   overflow-x:auto;
   border-radius:16px;
   border:1px solid rgba(120,160,255,.18);
   background:rgba(8,12,26,.45);
 }
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
+table{ width:100%; border-collapse:collapse; font-size:14px; }
 th,td{
   padding:12px 10px;
   border-bottom:1px solid rgba(120,160,255,.12);
@@ -277,15 +195,42 @@ th{
 }
 tr:last-child td{ border-bottom:none; }
 
-/* responsive */
-@media(max-width:780px){
+.tabs{
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.tab{
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid rgba(120,160,255,.18);
+  background:rgba(8,12,26,.45);
+  color:var(--muted);
+  cursor:pointer;
+  font-weight:700;
+  font-size:13px;
+}
+.tab.active{
+  background:rgba(75,125,255,.20);
+  border-color: rgba(75,125,255,.35);
+  color:var(--text);
+}
+
+a.link{
+  color: #bcd0ff;
+  text-decoration:none;
+  font-weight:800;
+}
+a.link:active{ opacity:.8; }
+
+.hide{ display:none; }
+
+@media(max-width:900px){
+  .grid3{ grid-template-columns:1fr; }
   .grid2{ grid-template-columns:1fr; }
   h1{ font-size:24px; }
   .wrap{ padding:14px 12px 34px; }
   .cardInner{ padding:13px; }
   .btnRow{ flex-direction:column; }
 }
-.hide{ display:none; }
 </style>
 </head>
 
@@ -294,13 +239,11 @@ tr:last-child td{ border-bottom:none; }
   <div class="wrap">
 
     <div class="header">
-      <div>
-        <div class="title">
-          <div class="logo">⛽</div>
-          <div>
-            <h1>Rejestr tankowań</h1>
-            <div class="sub">Kierowca widzi tylko swój pojazd. Admin widzi wszystko.</div>
-          </div>
+      <div class="title">
+        <div class="logo">⛽</div>
+        <div>
+          <h1>Rejestr tankowań</h1>
+          <div class="sub">Kierowca widzi tylko swój pojazd. Admin widzi wszystko.</div>
         </div>
       </div>
     </div>
@@ -357,18 +300,18 @@ tr:last-child td{ border-bottom:none; }
       </div>
     </div>
 
-    <!-- PANEL -->
+    <!-- USER STRIP -->
     <div class="card hide" id="appCard">
       <div class="cardInner">
         <div class="userStrip">
-          <div class="pill" id="whoPill">Zalogowany: <b id="whoName">—</b> <span id="whoRole" style="opacity:.75"></span></div>
-          <button class="btn secondary" style="width:auto; padding:10px 14px" onclick="logout()">Wyloguj</button>
+          <div class="pill">Zalogowany: <b id="whoName">—</b> <span id="whoRole" style="opacity:.75"></span></div>
+          <button class="btn secondary small" onclick="logout()">Wyloguj</button>
         </div>
       </div>
     </div>
 
-    <!-- DODAJ TANKOWANIE -->
-    <div class="card hide" id="fuelCard">
+    <!-- DRIVER PANEL -->
+    <div class="card hide" id="driverFuelCard">
       <div class="cardInner">
         <div class="cardTitle">Dodaj tankowanie</div>
 
@@ -404,7 +347,6 @@ tr:last-child td{ border-bottom:none; }
 
           <div class="hr"></div>
 
-          <!-- Zdjęcia (premium) -->
           <div class="stack">
             <label>Zdjęcie licznika</label>
             <div class="fileBox">
@@ -429,8 +371,7 @@ tr:last-child td{ border-bottom:none; }
       </div>
     </div>
 
-    <!-- HISTORIA -->
-    <div class="card hide" id="histCard">
+    <div class="card hide" id="driverHistCard">
       <div class="cardInner">
         <div class="cardTitle">Tankowania (ostatnie 50)</div>
         <div id="histMsg" class="msg"></div>
@@ -451,34 +392,176 @@ tr:last-child td{ border-bottom:none; }
       </div>
     </div>
 
-    <!-- SERWIS (tylko admin) -->
-    <div class="card hide" id="serviceCard">
+    <!-- ADMIN PANEL -->
+    <div class="card hide" id="adminCard">
       <div class="cardInner">
-        <div class="cardTitle">Serwis pojazdu (Admin)</div>
-        <div class="grid2">
-          <div class="stack">
-            <label>Data</label>
-            <input id="serviceDate" class="input" type="date">
+        <div class="cardTitle">Panel administratora</div>
+
+        <div class="tabs" style="margin-bottom:10px">
+          <div class="tab active" id="tabFuel" onclick="switchAdminTab('fuel')">Tankowania</div>
+          <div class="tab" id="tabVehicles" onclick="switchAdminTab('vehicles')">Pojazdy</div>
+          <div class="tab" id="tabAssign" onclick="switchAdminTab('assign')">Przypisania</div>
+          <div class="tab" id="tabService" onclick="switchAdminTab('service')">Serwis</div>
+        </div>
+
+        <!-- ADMIN: TANKOWANIA -->
+        <div id="adminFuel">
+          <div class="grid2">
+            <div class="stack">
+              <label>Filtr: pojazd</label>
+              <select id="adminVehicleFilter" class="input" onchange="adminLoadFuel()"></select>
+            </div>
+            <div class="stack">
+              <label>Limit</label>
+              <select id="adminFuelLimit" class="input" onchange="adminLoadFuel()">
+                <option value="50">50</option>
+                <option value="100" selected>100</option>
+                <option value="200">200</option>
+              </select>
+            </div>
           </div>
-          <div class="stack">
-            <label>Stan licznika (km)</label>
-            <input id="serviceOdo" class="input" type="number" inputmode="numeric" placeholder="np. 201200">
+
+          <div class="hr"></div>
+
+          <div id="adminFuelMsg" class="msg"></div>
+          <div class="tableWrap">
+            <table id="adminFuelTbl" class="hide">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Pojazd</th>
+                  <th>Kierowca</th>
+                  <th>Licznik</th>
+                  <th>Litry</th>
+                  <th>l/100</th>
+                  <th>Zdjęcia</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
           </div>
         </div>
 
-        <div class="hr"></div>
+        <!-- ADMIN: POJAZDY -->
+        <div id="adminVehicles" class="hide">
+          <div class="grid3">
+            <div class="stack">
+              <label>Rejestracja (unikalna)</label>
+              <input id="vehPlate" class="input" placeholder="POJAZD-3">
+            </div>
+            <div class="stack">
+              <label>Rodzaj paliwa</label>
+              <select id="vehFuel" class="input">
+                <option value="diesel" selected>diesel</option>
+                <option value="petrol">benzyna</option>
+              </select>
+            </div>
+            <div class="stack" style="align-self:end">
+              <button class="btn" onclick="adminAddVehicle()">Dodaj pojazd</button>
+            </div>
+          </div>
 
-        <div class="stack">
-          <label>Opis</label>
-          <input id="serviceDesc" class="input" placeholder="np. wymiana oleju + filtry">
-          <label>Koszt (opcjonalnie)</label>
-          <input id="serviceCost" class="input" type="number" step="0.01" inputmode="decimal" placeholder="np. 850.00">
+          <div id="adminVehMsg" class="msg"></div>
+          <div class="hr"></div>
+
+          <div class="tableWrap">
+            <table id="adminVehTbl" class="hide">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Rejestracja</th>
+                  <th>Paliwo</th>
+                  <th>Akcje</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="hr"></div>
+        <!-- ADMIN: PRZYPISANIA -->
+        <div id="adminAssign" class="hide">
+          <div class="grid3">
+            <div class="stack">
+              <label>Kierowca</label>
+              <select id="assignDriver" class="input"></select>
+            </div>
+            <div class="stack">
+              <label>Pojazd</label>
+              <select id="assignVehicle" class="input"></select>
+            </div>
+            <div class="stack" style="align-self:end">
+              <button class="btn" onclick="adminAssign()">Zapisz przypisanie</button>
+            </div>
+          </div>
 
-        <button class="btn" onclick="addService()">Dodaj serwis</button>
-        <div id="serviceMsg" class="msg"></div>
+          <div id="adminAssignMsg" class="msg"></div>
+          <div class="hr"></div>
+
+          <div class="tableWrap">
+            <table id="adminAssignTbl" class="hide">
+              <thead>
+                <tr>
+                  <th>Kierowca</th>
+                  <th>Pojazd</th>
+                  <th>Od</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ADMIN: SERWIS -->
+        <div id="adminService" class="hide">
+          <div class="grid3">
+            <div class="stack">
+              <label>Pojazd</label>
+              <select id="serviceVehicle" class="input"></select>
+            </div>
+            <div class="stack">
+              <label>Data</label>
+              <input id="serviceDate" class="input" type="date">
+            </div>
+            <div class="stack">
+              <label>Stan licznika (km)</label>
+              <input id="serviceOdo" class="input" type="number" inputmode="numeric" placeholder="np. 201200">
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="stack">
+            <label>Opis</label>
+            <input id="serviceDesc" class="input" placeholder="np. wymiana oleju + filtry">
+            <label>Koszt (opcjonalnie)</label>
+            <input id="serviceCost" class="input" type="number" step="0.01" inputmode="decimal" placeholder="np. 850.00">
+          </div>
+
+          <div class="hr"></div>
+
+          <button class="btn" onclick="adminAddService()">Dodaj serwis</button>
+          <div id="adminServiceMsg" class="msg"></div>
+
+          <div class="hr"></div>
+
+          <div id="adminServiceListMsg" class="msg"></div>
+          <div class="tableWrap">
+            <table id="adminServiceTbl" class="hide">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Pojazd</th>
+                  <th>Licznik</th>
+                  <th>Opis</th>
+                  <th>Koszt</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -486,7 +569,7 @@ tr:last-child td{ border-bottom:none; }
 </div>
 
 <script>
-let sb=null,myProfile=null,myVehicleId=null;
+let sb=null, myProfile=null, myVehicleId=null;
 
 const VEHICLE_1='33474aad-2d3c-4777-80f7-62eb16ce4434';
 const VEHICLE_2='4b8b8534-3f12-41e1-af1a-24fb4f710cb3';
@@ -529,6 +612,9 @@ function setFileName(inputEl, labelEl){
   labelEl.textContent = f ? f.name : 'Nie wybrano pliku';
 }
 
+/* =========================
+   INIT / AUTH
+   ========================= */
 async function init(){
   const{url,key}=loadCfg();
   if(!url||!key) return;
@@ -538,9 +624,11 @@ async function init(){
 
   sb = window.supabase.createClient(url,key);
 
-  // eventy nazw plików
-  photoOdo.addEventListener('change', ()=>setFileName(photoOdo, odoFileName));
-  photoRec.addEventListener('change', ()=>setFileName(photoRec, recFileName));
+  // file name listeners (driver)
+  if(window.photoOdo){
+    photoOdo.addEventListener('change', ()=>setFileName(photoOdo, odoFileName));
+    photoRec.addEventListener('change', ()=>setFileName(photoRec, recFileName));
+  }
 
   const { data: { session } } = await sb.auth.getSession();
   if(session) afterLogin();
@@ -559,9 +647,9 @@ async function login(){
 async function logout(){
   if(sb) await sb.auth.signOut();
   show('appCard',false);
-  show('fuelCard',false);
-  show('histCard',false);
-  show('serviceCard',false);
+  show('driverFuelCard',false);
+  show('driverHistCard',false);
+  show('adminCard',false);
   show('authCard',true);
   authMsg.textContent='';
 }
@@ -581,25 +669,32 @@ async function afterLogin(){
   }
 
   myProfile = prof;
-
   const { data: vId } = await sb.rpc('my_vehicle_id');
   myVehicleId = vId || null;
 
   show('authCard',false);
   show('appCard',true);
-  show('fuelCard',true);
-  show('histCard',true);
-
-  // serwis tylko admin
-  show('serviceCard', myProfile.role === 'admin');
 
   whoName.textContent = myProfile.full_name || '—';
   whoRole.textContent = myProfile.role ? `(${myProfile.role})` : '';
 
-  setDefaultDateTime();
-  await loadHistory();
+  const isAdmin = myProfile.role === 'admin';
+
+  show('driverFuelCard', !isAdmin);
+  show('driverHistCard', !isAdmin);
+  show('adminCard', isAdmin);
+
+  if(!isAdmin){
+    setDefaultDateTime();
+    await loadDriverHistory();
+  } else {
+    await adminBootstrap();
+  }
 }
 
+/* =========================
+   DRIVER: add fuel + history
+   ========================= */
 async function addFuel(){
   fuelMsg.innerHTML = 'Zapisywanie...';
 
@@ -613,7 +708,7 @@ async function addFuel(){
     return;
   }
 
-  // blokada cofnięcia licznika
+  // prevent rollback odometer
   const { data: lastEntry } = await sb.from('fuel_entries')
     .select('odometer_km')
     .eq('vehicle_id', myVehicleId)
@@ -628,7 +723,6 @@ async function addFuel(){
     }
   }
 
-  // insert tankowania
   const { data, error } = await sb.from('fuel_entries')
     .insert({
       vehicle_id: myVehicleId,
@@ -648,7 +742,7 @@ async function addFuel(){
 
   const fuelId = data.id;
 
-  // upload zdjęć
+  // upload photos
   const odoFile = photoOdo.files[0] || null;
   const recFile = photoRec.files[0] || null;
 
@@ -665,13 +759,12 @@ async function addFuel(){
     }
   }catch(e){
     fuelMsg.innerHTML = `<span class="err">Tankowanie zapisane, ale nie udało się wysłać zdjęcia: ${e.message}</span>`;
-    await loadHistory();
+    await loadDriverHistory();
     return;
   }
 
   fuelMsg.innerHTML = `<span class="ok">Zapisano tankowanie</span>`;
 
-  // reset
   odo.value='';
   liters.value='';
   ppl.value='';
@@ -681,10 +774,10 @@ async function addFuel(){
   recFileName.textContent='Nie wybrano pliku';
   setDefaultDateTime();
 
-  await loadHistory();
+  await loadDriverHistory();
 }
 
-async function loadHistory(){
+async function loadDriverHistory(){
   histMsg.textContent = 'Ładowanie...';
 
   const { data, error } = await sb.from('fuel_entries')
@@ -739,21 +832,323 @@ async function loadHistory(){
   }
 }
 
-async function addService(){
-  serviceMsg.textContent = 'Zapisywanie...';
+/* =========================
+   ADMIN PANEL
+   ========================= */
+function switchAdminTab(tab){
+  // tabs
+  const map = {fuel:['tabFuel','adminFuel'], vehicles:['tabVehicles','adminVehicles'], assign:['tabAssign','adminAssign'], service:['tabService','adminService']};
+  for(const k of Object.keys(map)){
+    document.getElementById(map[k][0]).classList.toggle('active', k===tab);
+    show(map[k][1], k===tab);
+  }
+  // load on demand
+  if(tab==='fuel') adminLoadFuel();
+  if(tab==='vehicles') adminLoadVehicles();
+  if(tab==='assign') adminLoadAssignments();
+  if(tab==='service') adminLoadServices();
+}
 
+async function adminBootstrap(){
+  // preload vehicle list + drivers list
+  await adminRefreshDropdowns();
+  // default tab
+  switchAdminTab('fuel');
+}
+
+async function adminRefreshDropdowns(){
+  // vehicles
+  const { data: vehicles, error: verr } = await sb
+    .from('vehicles')
+    .select('id, plate, fuel_type')
+    .order('plate', { ascending:true });
+
+  if(verr){
+    adminFuelMsg.innerHTML = `<span class="err">Błąd wczytania pojazdów: ${verr.message}</span>`;
+    return;
+  }
+
+  // driver profiles
+  const { data: drivers, error: derr } = await sb
+    .from('profiles')
+    .select('id, full_name, role')
+    .order('full_name', { ascending:true });
+
+  if(derr){
+    adminFuelMsg.innerHTML = `<span class="err">Błąd wczytania profili: ${derr.message}</span>`;
+    return;
+  }
+
+  // admin vehicle filter
+  adminVehicleFilter.innerHTML = `<option value="">Wszystkie</option>` + vehicles.map(v=>`<option value="${v.id}">${v.plate}</option>`).join('');
+  // assign dropdowns
+  assignVehicle.innerHTML = vehicles.map(v=>`<option value="${v.id}">${v.plate}</option>`).join('');
+  serviceVehicle.innerHTML = vehicles.map(v=>`<option value="${v.id}">${v.plate}</option>`).join('');
+
+  const driverOnly = drivers.filter(p=>p.role==='driver');
+  assignDriver.innerHTML = driverOnly.map(d=>`<option value="${d.id}">${d.full_name}</option>`).join('');
+}
+
+async function adminLoadFuel(){
+  adminFuelMsg.textContent = 'Ładowanie...';
+  adminFuelTbl.classList.add('hide');
+  const tbody = adminFuelTbl.querySelector('tbody');
+  tbody.innerHTML = '';
+
+  const limit = parseInt(adminFuelLimit.value || '100', 10);
+  const vehicleFilter = adminVehicleFilter.value || '';
+
+  let q = sb
+    .from('fuel_entries')
+    .select('id, vehicle_id, driver_id, occurred_at, odometer_km, liters')
+    .order('occurred_at', { ascending:false })
+    .limit(limit);
+
+  if(vehicleFilter) q = q.eq('vehicle_id', vehicleFilter);
+
+  const { data, error } = await q;
+
+  if(error){
+    adminFuelMsg.innerHTML = `<span class="err">${error.message}</span>`;
+    return;
+  }
+
+  // bring vehicle plates + driver names in 2 quick maps
+  const vehicleIds = [...new Set((data||[]).map(r=>r.vehicle_id))];
+  const driverIds  = [...new Set((data||[]).map(r=>r.driver_id))];
+
+  const { data: vehs } = await sb.from('vehicles').select('id, plate').in('id', vehicleIds.length?vehicleIds:['00000000-0000-0000-0000-000000000000']);
+  const { data: prof } = await sb.from('profiles').select('id, full_name').in('id', driverIds.length?driverIds:['00000000-0000-0000-0000-000000000000']);
+
+  const vehMap = Object.fromEntries((vehs||[]).map(v=>[v.id, v.plate]));
+  const drvMap = Object.fromEntries((prof||[]).map(p=>[p.id, p.full_name]));
+
+  adminFuelMsg.textContent = '';
+  adminFuelTbl.classList.remove('hide');
+
+  // l/100 computed per row using next (older) entry for same vehicle
+  // We'll pre-group by vehicle
+  const byVeh = {};
+  for(const r of data){ (byVeh[r.vehicle_id] ||= []).push(r); }
+
+  // For each vehicle list is already DESC by occurred_at, so l/100 for row i uses row i+1
+  const l100Map = {};
+  for(const vid of Object.keys(byVeh)){
+    const rows = byVeh[vid];
+    for(let i=0;i<rows.length;i++){
+      const r = rows[i];
+      const prev = rows[i+1];
+      if(prev){
+        const km = r.odometer_km - prev.odometer_km;
+        if(km>0) l100Map[r.id] = (Number(r.liters)/km)*100;
+      }
+    }
+  }
+
+  for(const r of (data||[])){
+    const dateOnly = new Date(r.occurred_at).toLocaleDateString('pl-PL');
+    const plate = vehMap[r.vehicle_id] || r.vehicle_id?.slice(0,8);
+    const driver = drvMap[r.driver_id] || r.driver_id?.slice(0,8);
+
+    // thresholds
+    let threshold = null;
+    if(r.vehicle_id===VEHICLE_1) threshold=7.5;
+    if(r.vehicle_id===VEHICLE_2) threshold=9.0;
+
+    const l100 = l100Map[r.id];
+    let l100Html = '—';
+    if(l100!=null){
+      const val = l100.toFixed(2);
+      if(threshold!=null && l100>threshold){
+        l100Html = `<span style="color:#ff4d4d;font-weight:800">${val}</span>`;
+      }else{
+        l100Html = `<span style="font-weight:800">${val}</span>`;
+      }
+    }
+
+    // photo links (signed url by convention)
+    const btnOdo = `<a class="link" href="#" onclick="openPhoto('${r.vehicle_id}','odometer','${r.id}');return false;">Licznik</a>`;
+    const btnWz  = `<a class="link" href="#" onclick="openPhoto('${r.vehicle_id}','receipt','${r.id}');return false;">WZ</a>`;
+
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td>${dateOnly}</td>
+        <td>${plate}</td>
+        <td>${driver}</td>
+        <td>${r.odometer_km ?? ''}</td>
+        <td>${r.liters ?? ''}</td>
+        <td>${l100Html}</td>
+        <td style="display:flex; gap:10px">${btnOdo} ${btnWz}</td>
+      </tr>
+    `);
+  }
+}
+
+async function openPhoto(vehicleId, kind, fuelId){
+  // kind: 'odometer' or 'receipt'
+  const path = `${vehicleId}/${kind}/${fuelId}.jpg`;
+  const { data, error } = await sb.storage.from('fuel-photos').createSignedUrl(path, 60);
+  if(error){
+    alert('Brak zdjęcia lub brak uprawnień.');
+    return;
+  }
+  window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+}
+
+async function adminAddVehicle(){
+  adminVehMsg.textContent = 'Zapisywanie...';
+  const plate = (vehPlate.value||'').trim();
+  const fuel = vehFuel.value;
+
+  if(!plate){
+    adminVehMsg.innerHTML = `<span class="err">Podaj rejestrację.</span>`;
+    return;
+  }
+
+  const { error } = await sb.from('vehicles').insert({ plate, fuel_type: fuel });
+
+  if(error){
+    adminVehMsg.innerHTML = `<span class="err">${error.message}</span>`;
+    return;
+  }
+
+  adminVehMsg.innerHTML = `<span class="ok">Dodano pojazd</span>`;
+  vehPlate.value='';
+  await adminRefreshDropdowns();
+  await adminLoadVehicles();
+}
+
+async function adminLoadVehicles(){
+  adminVehMsg.textContent = 'Ładowanie...';
+  adminVehTbl.classList.add('hide');
+  const tbody = adminVehTbl.querySelector('tbody');
+  tbody.innerHTML='';
+
+  const { data, error } = await sb.from('vehicles').select('id, plate, fuel_type').order('plate',{ascending:true});
+  if(error){
+    adminVehMsg.innerHTML = `<span class="err">${error.message}</span>`;
+    return;
+  }
+
+  adminVehMsg.textContent='';
+  adminVehTbl.classList.remove('hide');
+
+  for(const v of (data||[])){
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td>${v.id.slice(0,8)}…</td>
+        <td><b>${v.plate}</b></td>
+        <td>${v.fuel_type}</td>
+        <td>
+          <button class="btn secondary small" onclick="adminDeleteVehicle('${v.id}','${v.plate.replaceAll("'","")}')">Usuń</button>
+        </td>
+      </tr>
+    `);
+  }
+}
+
+async function adminDeleteVehicle(id, plate){
+  if(!confirm(`Usunąć pojazd ${plate}?`)) return;
+  const { error } = await sb.from('vehicles').delete().eq('id', id);
+  if(error){
+    adminVehMsg.innerHTML = `<span class="err">${error.message}</span>`;
+    return;
+  }
+  adminVehMsg.innerHTML = `<span class="ok">Usunięto pojazd</span>`;
+  await adminRefreshDropdowns();
+  await adminLoadVehicles();
+}
+
+async function adminAssign(){
+  adminAssignMsg.textContent = 'Zapisywanie...';
+  const driver_id = assignDriver.value;
+  const vehicle_id = assignVehicle.value;
+
+  if(!driver_id || !vehicle_id){
+    adminAssignMsg.innerHTML = `<span class="err">Wybierz kierowcę i pojazd.</span>`;
+    return;
+  }
+
+  // upsert: jeśli masz unikalność driver_id lub vehicle_id, może wymagać innej logiki.
+  // Tu robimy: usuń stare przypisania kierowcy i wstaw nowe.
+  // (najprościej przy "na stałe")
+  const del = await sb.from('vehicle_assignments').delete().eq('driver_id', driver_id);
+  if(del.error){
+    adminAssignMsg.innerHTML = `<span class="err">${del.error.message}</span>`;
+    return;
+  }
+
+  const { error } = await sb.from('vehicle_assignments').insert({
+    driver_id,
+    vehicle_id,
+    start_date: new Date().toISOString()
+  });
+
+  if(error){
+    adminAssignMsg.innerHTML = `<span class="err">${error.message}</span>`;
+    return;
+  }
+
+  adminAssignMsg.innerHTML = `<span class="ok">Zapisano przypisanie</span>`;
+  // refresh driver app logic uses RPC, so OK
+  await adminLoadAssignments();
+}
+
+async function adminLoadAssignments(){
+  adminAssignMsg.textContent = 'Ładowanie...';
+  adminAssignTbl.classList.add('hide');
+  const tbody = adminAssignTbl.querySelector('tbody');
+  tbody.innerHTML='';
+
+  const { data, error } = await sb.from('vehicle_assignments')
+    .select('driver_id, vehicle_id, start_date')
+    .order('start_date', { ascending:false });
+
+  if(error){
+    adminAssignMsg.innerHTML = `<span class="err">${error.message}</span>`;
+    return;
+  }
+
+  // maps
+  const driverIds = [...new Set((data||[]).map(r=>r.driver_id))];
+  const vehicleIds = [...new Set((data||[]).map(r=>r.vehicle_id))];
+
+  const { data: prof } = await sb.from('profiles').select('id, full_name').in('id', driverIds.length?driverIds:['00000000-0000-0000-0000-000000000000']);
+  const { data: vehs } = await sb.from('vehicles').select('id, plate').in('id', vehicleIds.length?vehicleIds:['00000000-0000-0000-0000-000000000000']);
+
+  const drvMap = Object.fromEntries((prof||[]).map(p=>[p.id, p.full_name]));
+  const vehMap = Object.fromEntries((vehs||[]).map(v=>[v.id, v.plate]));
+
+  adminAssignMsg.textContent='';
+  adminAssignTbl.classList.remove('hide');
+
+  for(const r of (data||[])){
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td>${drvMap[r.driver_id] || r.driver_id.slice(0,8)+'…'}</td>
+        <td><b>${vehMap[r.vehicle_id] || r.vehicle_id.slice(0,8)+'…'}</b></td>
+        <td>${new Date(r.start_date).toLocaleDateString('pl-PL')}</td>
+      </tr>
+    `);
+  }
+}
+
+async function adminAddService(){
+  adminServiceMsg.textContent = 'Zapisywanie...';
+
+  const vehicle_id = serviceVehicle.value;
   const date = serviceDate.value;
   const odoVal = parseInt(serviceOdo.value||'0',10);
   const desc = serviceDesc.value.trim();
   const cost = serviceCost.value ? parseFloat(serviceCost.value) : null;
 
-  if(!date || !odoVal || !desc){
-    serviceMsg.innerHTML = `<span class="err">Uzupełnij datę, licznik i opis.</span>`;
+  if(!vehicle_id || !date || !odoVal || !desc){
+    adminServiceMsg.innerHTML = `<span class="err">Uzupełnij pojazd, datę, licznik i opis.</span>`;
     return;
   }
 
   const { error } = await sb.from('vehicle_services').insert({
-    vehicle_id: myVehicleId,
+    vehicle_id,
     service_date: date,
     odometer_km: odoVal,
     description: desc,
@@ -761,15 +1156,54 @@ async function addService(){
   });
 
   if(error){
-    serviceMsg.innerHTML = `<span class="err">${error.message}</span>`;
+    adminServiceMsg.innerHTML = `<span class="err">${error.message}</span>`;
     return;
   }
 
-  serviceMsg.innerHTML = `<span class="ok">Dodano serwis</span>`;
+  adminServiceMsg.innerHTML = `<span class="ok">Dodano serwis</span>`;
   serviceDate.value='';
   serviceOdo.value='';
   serviceDesc.value='';
   serviceCost.value='';
+
+  await adminLoadServices();
+}
+
+async function adminLoadServices(){
+  adminServiceListMsg.textContent = 'Ładowanie...';
+  adminServiceTbl.classList.add('hide');
+  const tbody = adminServiceTbl.querySelector('tbody');
+  tbody.innerHTML='';
+
+  const { data, error } = await sb.from('vehicle_services')
+    .select('vehicle_id, service_date, odometer_km, description, cost')
+    .order('service_date', { ascending:false })
+    .limit(200);
+
+  if(error){
+    adminServiceListMsg.innerHTML = `<span class="err">${error.message}</span>`;
+    return;
+  }
+
+  // vehicle map
+  const vehicleIds = [...new Set((data||[]).map(r=>r.vehicle_id))];
+  const { data: vehs } = await sb.from('vehicles').select('id, plate').in('id', vehicleIds.length?vehicleIds:['00000000-0000-0000-0000-000000000000']);
+  const vehMap = Object.fromEntries((vehs||[]).map(v=>[v.id, v.plate]));
+
+  adminServiceListMsg.textContent='';
+  adminServiceTbl.classList.remove('hide');
+
+  for(const r of (data||[])){
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td>${new Date(r.service_date).toLocaleDateString('pl-PL')}</td>
+        <td><b>${vehMap[r.vehicle_id] || r.vehicle_id.slice(0,8)+'…'}</b></td>
+        <td>${r.odometer_km ?? ''}</td>
+        <td>${(r.description||'').replaceAll('<','&lt;')}</td>
+        <td>${r.cost ?? ''}</td>
+      </tr>
+    `);
+  }
 }
 
 init();
