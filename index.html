@@ -1,23 +1,27 @@
 <!doctype html>
 <html lang="pl">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Paliwo – Firma</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 body{font-family:system-ui;margin:0;background:#0b1020;color:#eaf0ff}
-.wrap{max-width:980px;margin:auto;padding:16px}
+.wrap{max-width:1000px;margin:auto;padding:12px}
 .card{background:#121a33;border:1px solid #23305a;border-radius:14px;padding:14px;margin:12px 0}
-input,button{width:100%;padding:10px;border-radius:10px;border:1px solid #2a3a6b;background:#0b1020;color:#eaf0ff}
+input,button{width:100%;padding:12px;border-radius:10px;border:1px solid #2a3a6b;background:#0b1020;color:#eaf0ff;font-size:16px}
 button{cursor:pointer;border:none;background:#4b7dff}
 button.secondary{background:#2a3a6b}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-table{width:100%;border-collapse:collapse}
-th,td{border-bottom:1px solid #23305a;padding:10px;text-align:left}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:768px){.row{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border-bottom:1px solid #23305a;padding:8px;text-align:left}
+.table-wrapper{overflow-x:auto}
 .ok{color:#8dffb0}
-.err{color:#ff6b6b}
+.err{color:#ff4d4d}
 .hide{display:none}
 </style>
 </head>
@@ -58,24 +62,23 @@ th,td{border-bottom:1px solid #23305a;padding:10px;text-align:left}
 
 <div class="card hide" id="fuelCard">
 <h3>Dodaj tankowanie</h3>
-
 <div class="row">
 <input id="occurredAt" type="datetime-local">
 <input id="odo" type="number" placeholder="Stan licznika">
 </div>
-
 <div class="row">
 <input id="liters" type="number" step="0.01" placeholder="Litry">
 <input id="ppl" type="number" step="0.01" placeholder="Cena za litr">
 </div>
-
 <button onclick="addFuel()">Zapisz tankowanie</button>
 <div id="fuelMsg"></div>
 </div>
 
 <div class="card hide" id="histCard">
 <h3>Tankowania (ostatnie 50)</h3>
+<button onclick="exportExcel()">Eksport do Excel</button>
 <div id="histMsg"></div>
+<div class="table-wrapper">
 <table id="histTbl" class="hide">
 <thead>
 <tr>
@@ -87,6 +90,19 @@ th,td{border-bottom:1px solid #23305a;padding:10px;text-align:left}
 </thead>
 <tbody></tbody>
 </table>
+</div>
+</div>
+
+<div class="card hide">
+<h3>Serwis pojazdu</h3>
+<div class="row">
+<input id="serviceDate" type="date">
+<input id="serviceOdo" type="number" placeholder="Stan licznika">
+</div>
+<input id="serviceDesc" placeholder="Opis serwisu">
+<input id="serviceCost" type="number" step="0.01" placeholder="Koszt">
+<button onclick="addService()">Dodaj serwis</button>
+<div id="serviceMsg"></div>
 </div>
 
 </div>
@@ -142,7 +158,6 @@ async function afterLogin(){
 const{data:{user}}=await sb.auth.getUser();
 const{data:prof}=await sb.from('profiles').select('id,full_name,role').eq('id',user.id).single();
 myProfile=prof;
-
 const{data:vId}=await sb.rpc('my_vehicle_id');
 myVehicleId=vId||null;
 
@@ -153,18 +168,35 @@ show('histCard',true);
 
 who.innerHTML=`Zalogowany: <b>${myProfile.full_name}</b>`;
 occurredAt.value=nowLocal();
-
 loadHistory();
 }
 
 async function addFuel(){
+
 const occurred=occurredAt.value?new Date(occurredAt.value).toISOString():new Date().toISOString();
+const newOdo=parseInt(odo.value||'0');
+
+if(!newOdo){fuelMsg.innerHTML='<span class="err">Podaj stan licznika</span>';return;}
+
+const{data:lastEntry}=await sb.from('fuel_entries')
+.select('odometer_km')
+.eq('vehicle_id',myVehicleId)
+.order('occurred_at',{ascending:false})
+.limit(1);
+
+if(lastEntry && lastEntry.length>0){
+const lastOdo=lastEntry[0].odometer_km;
+if(newOdo<lastOdo){
+fuelMsg.innerHTML=`<span class="err">Nie można cofnąć licznika. Ostatni stan: ${lastOdo} km</span>`;
+return;
+}
+}
 
 await sb.from('fuel_entries').insert({
 vehicle_id:myVehicleId,
 driver_id:myProfile.id,
 occurred_at:occurred,
-odometer_km:parseInt(odo.value||'0'),
+odometer_km:newOdo,
 liters:parseFloat(liters.value||'0'),
 price_per_l:parseFloat(ppl.value||'0')
 });
@@ -217,6 +249,35 @@ histTbl.querySelector('tbody').insertAdjacentHTML('beforeend',`
 </tr>
 `);
 }
+}
+
+async function addService(){
+await sb.from('vehicle_services').insert({
+vehicle_id:myVehicleId,
+service_date:serviceDate.value,
+odometer_km:parseInt(serviceOdo.value||'0'),
+description:serviceDesc.value,
+cost:parseFloat(serviceCost.value||'0')
+});
+serviceMsg.innerHTML='<span class="ok">Dodano serwis</span>';
+}
+
+async function exportExcel(){
+const{data}=await sb.from('fuel_entries')
+.select('occurred_at,odometer_km,liters')
+.eq('vehicle_id',myVehicleId)
+.order('occurred_at',{ascending:true});
+
+const rows=data.map(r=>({
+Data:new Date(r.occurred_at).toLocaleDateString('pl-PL'),
+Licznik:r.odometer_km,
+Litry:r.liters
+}));
+
+const ws=XLSX.utils.json_to_sheet(rows);
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,"Tankowania");
+XLSX.writeFile(wb,"tankowania.xlsx");
 }
 
 init();
