@@ -9,17 +9,77 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body{font-family:system-ui;margin:0;background:#0b1020;color:#eaf0ff}
-.wrap{max-width:1000px;margin:auto;padding:12px}
-.card{background:#121a33;border:1px solid #23305a;border-radius:14px;padding:14px;margin:12px 0}
-input,button{width:100%;padding:12px;border-radius:10px;border:1px solid #2a3a6b;background:#0b1020;color:#eaf0ff;font-size:16px}
-button{cursor:pointer;border:none;background:#4b7dff}
-button.secondary{background:#2a3a6b}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:768px){.row{grid-template-columns:1fr}}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{border-bottom:1px solid #23305a;padding:8px;text-align:left}
-.table-wrapper{overflow-x:auto}
+*{ box-sizing:border-box; }
+html,body{ width:100%; overflow-x:hidden; }
+
+body{
+  font-family:system-ui;
+  margin:0;
+  background:#0b1020;
+  color:#eaf0ff;
+}
+
+.wrap{
+  max-width:1000px;
+  margin:auto;
+  padding:12px;
+}
+
+.card{
+  background:#121a33;
+  border:1px solid #23305a;
+  border-radius:14px;
+  padding:14px;
+  margin:12px 0;
+  overflow:hidden;
+}
+
+input,button{
+  display:block;
+  width:100%;
+  max-width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #2a3a6b;
+  background:#0b1020;
+  color:#eaf0ff;
+  font-size:16px;
+}
+
+button{
+  cursor:pointer;
+  border:none;
+  background:#4b7dff;
+}
+
+button.secondary{
+  background:#2a3a6b;
+}
+
+.row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:10px;
+}
+
+@media(max-width:768px){
+  .row{ grid-template-columns:1fr; }
+}
+
+.table-wrapper{ overflow-x:auto; }
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+
+th,td{
+  border-bottom:1px solid #23305a;
+  padding:8px;
+  text-align:left;
+}
+
 .ok{color:#8dffb0}
 .err{color:#ff4d4d}
 .hide{display:none}
@@ -54,7 +114,7 @@ th,td{border-bottom:1px solid #23305a;padding:8px;text-align:left}
 </div>
 
 <div class="card hide" id="appCard">
-<div style="display:flex;justify-content:space-between">
+<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
 <div id="who"></div>
 <button class="secondary" onclick="logout()">Wyloguj</button>
 </div>
@@ -62,14 +122,17 @@ th,td{border-bottom:1px solid #23305a;padding:8px;text-align:left}
 
 <div class="card hide" id="fuelCard">
 <h3>Dodaj tankowanie</h3>
+
 <div class="row">
 <input id="occurredAt" type="datetime-local">
 <input id="odo" type="number" placeholder="Stan licznika">
 </div>
+
 <div class="row">
 <input id="liters" type="number" step="0.01" placeholder="Litry">
 <input id="ppl" type="number" step="0.01" placeholder="Cena za litr">
 </div>
+
 <button onclick="addFuel()">Zapisz tankowanie</button>
 <div id="fuelMsg"></div>
 </div>
@@ -93,7 +156,7 @@ th,td{border-bottom:1px solid #23305a;padding:8px;text-align:left}
 </div>
 </div>
 
-<div class="card hide">
+<div class="card hide" id="serviceCard">
 <h3>Serwis pojazdu</h3>
 <div class="row">
 <input id="serviceDate" type="date">
@@ -132,12 +195,15 @@ sbUrl.value=url;sbKey.value=key;
 return{url,key};
 }
 
-function show(id,on=true){document.getElementById(id).classList.toggle('hide',!on)}
+function show(id,on=true){
+document.getElementById(id).classList.toggle('hide',!on)
+}
 
 async function init(){
 const{url,key}=loadCfg();
 if(!url||!key)return;
-show('cfgCard',false);show('authCard',true);
+show('cfgCard',false);
+show('authCard',true);
 sb=window.supabase.createClient(url,key);
 const{data:{session}}=await sb.auth.getSession();
 if(session)afterLogin();
@@ -151,7 +217,11 @@ afterLogin();
 
 async function logout(){
 if(sb)await sb.auth.signOut();
-show('appCard',false);show('fuelCard',false);show('histCard',false);show('authCard',true);
+show('appCard',false);
+show('fuelCard',false);
+show('histCard',false);
+show('serviceCard',false);
+show('authCard',true);
 }
 
 async function afterLogin(){
@@ -165,14 +235,15 @@ show('authCard',false);
 show('appCard',true);
 show('fuelCard',true);
 show('histCard',true);
+show('serviceCard',true);
 
 who.innerHTML=`Zalogowany: <b>${myProfile.full_name}</b>`;
 occurredAt.value=nowLocal();
+
 loadHistory();
 }
 
 async function addFuel(){
-
 const occurred=occurredAt.value?new Date(occurredAt.value).toISOString():new Date().toISOString();
 const newOdo=parseInt(odo.value||'0');
 
