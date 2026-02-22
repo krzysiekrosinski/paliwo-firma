@@ -439,17 +439,34 @@ const { data: prof, error: perr } = await sb
 
     let prevOdo = null;
 
-    for(const r of (data||[])){
+    const rows = (data || []); // to jest DESC: najnowsze -> najstarsze
+
+    for(let i = 0; i < rows.length; i++){
+      const r = rows[i];
+      const prev = rows[i + 1]; // poprzednie tankowanie w czasie (starsze)
+
       const d = new Date(r.occurred_at);
       const ds = d.toLocaleString('pl-PL');
 
       let l100 = '';
-      if(prevOdo !== null){
-        const km = prevOdo - r.odometer_km; // bo lista jest od najnowszych
+      if(prev){
+        const km = r.odometer_km - prev.odometer_km; // różnica km od poprzedniego tankowania
         if(km > 0){
           l100 = ((Number(r.liters) / km) * 100).toFixed(2);
         }
       }
+
+      body.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${ds}</td>
+          <td>${r.odometer_km}</td>
+          <td>${r.liters}</td>
+          <td>${r.price_per_l}</td>
+          <td><b>${r.total_cost}</b></td>
+          <td><b>${l100}</b></td>
+        </tr>
+      `);
+    }
       prevOdo = r.odometer_km;
 
       body.insertAdjacentHTML('beforeend', `
