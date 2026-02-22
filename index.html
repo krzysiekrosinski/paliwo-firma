@@ -1,285 +1,222 @@
 <!doctype html>
 <html lang="pl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Paliwo – Firma</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;background:#0b1020;color:#eaf0ff}
-    .wrap{max-width:980px;margin:0 auto;padding:16px}
-    .card{background:#121a33;border:1px solid #23305a;border-radius:14px;padding:14px;margin:12px 0}
-    input,select,button,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #2a3a6b;background:#0b1020;color:#eaf0ff}
-    label{display:block;margin:10px 0 6px;color:#bcd0ff}
-    button{cursor:pointer;border:none;background:#4b7dff}
-    button.secondary{background:#2a3a6b}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .muted{color:#9bb0e6;font-size:13px}
-    .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:#21305a;border:1px solid #2a3a6b;color:#bcd0ff;font-size:12px}
-    table{width:100%;border-collapse:collapse}
-    th,td{border-bottom:1px solid #23305a;padding:10px;text-align:left;font-size:14px}
-    .ok{color:#8dffb0}
-    .err{color:#ff9aa5}
-    .hide{display:none}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Paliwo – Firma</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{font-family:system-ui;margin:0;background:#0b1020;color:#eaf0ff}
+.wrap{max-width:980px;margin:auto;padding:16px}
+.card{background:#121a33;border:1px solid #23305a;border-radius:14px;padding:14px;margin:12px 0}
+input,button{width:100%;padding:10px;border-radius:10px;border:1px solid #2a3a6b;background:#0b1020;color:#eaf0ff}
+button{cursor:pointer;border:none;background:#4b7dff}
+button.secondary{background:#2a3a6b}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+table{width:100%;border-collapse:collapse}
+th,td{border-bottom:1px solid #23305a;padding:10px;text-align:left}
+.ok{color:#8dffb0}
+.err{color:#ff6b6b}
+.hide{display:none}
+</style>
 </head>
+
 <body>
 <div class="wrap">
-  <h2>📱 Rejestr tankowań</h2>
-  <div class="muted">Kierowca widzi tylko swój pojazd. Admin widzi wszystko.</div>
 
-  <!-- KONFIG -->
-  <div class="card" id="cfgCard">
-    <div class="pill">Krok 1</div>
-    <h3>Konfiguracja połączenia</h3>
-    <p class="muted">Wklej z Supabase: <b>Project URL</b> i <b>publishable key</b>.</p>
-    <div class="row">
-      <div>
-        <label>Supabase URL</label>
-        <input id="sbUrl" />
-      </div>
-      <div>
-        <label>Publishable key</label>
-        <input id="sbKey" />
-      </div>
-    </div>
-    <button onclick="saveCfg()">Zapisz konfigurację</button>
-  </div>
+<h2>📱 Rejestr tankowań</h2>
 
-  <!-- LOGOWANIE -->
-  <div class="card hide" id="authCard">
-    <h3>Logowanie</h3>
-    <div class="row">
-      <input id="email" placeholder="Email" />
-      <input id="pass" type="password" placeholder="Hasło" />
-    </div>
-    <div class="row">
-      <button onclick="login()">Zaloguj</button>
-      <button class="secondary" onclick="logout()">Wyloguj</button>
-    </div>
-    <div id="authMsg" class="muted"></div>
-  </div>
+<div class="card" id="cfgCard">
+<h3>Konfiguracja</h3>
+<div class="row">
+<input id="sbUrl" placeholder="Supabase URL">
+<input id="sbKey" placeholder="Publishable key">
+</div>
+<button onclick="saveCfg()">Zapisz</button>
+</div>
 
-  <!-- PANEL -->
-  <div class="card hide" id="appCard">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <h3 style="margin:0">Panel</h3>
-        <div id="who" class="muted"></div>
-      </div>
-      <button class="secondary" onclick="logout()">Wyloguj</button>
-    </div>
-  </div>
+<div class="card hide" id="authCard">
+<h3>Logowanie</h3>
+<div class="row">
+<input id="email" placeholder="Email">
+<input id="pass" type="password" placeholder="Hasło">
+</div>
+<div class="row">
+<button onclick="login()">Zaloguj</button>
+<button class="secondary" onclick="logout()">Wyloguj</button>
+</div>
+<div id="authMsg"></div>
+</div>
 
-  <!-- TANKOWANIE -->
-  <div class="card hide" id="fuelCard">
-    <h3>Dodaj tankowanie</h3>
+<div class="card hide" id="appCard">
+<div style="display:flex;justify-content:space-between">
+<div id="who"></div>
+<button class="secondary" onclick="logout()">Wyloguj</button>
+</div>
+</div>
 
-    <div class="row">
-      <div>
-        <label>Data i godzina</label>
-        <input id="occurredAt" type="datetime-local" />
-      </div>
-      <div>
-        <label>Stan licznika (km)</label>
-        <input id="odo" type="number" min="0" />
-      </div>
-    </div>
+<div class="card hide" id="fuelCard">
+<h3>Dodaj tankowanie</h3>
 
-    <div class="row">
-      <input id="liters" type="number" step="0.01" min="0" placeholder="Litry" oninput="calcCost()" />
-      <input id="ppl" type="number" step="0.01" min="0" placeholder="Cena za litr" oninput="calcCost()" />
-    </div>
+<div class="row">
+<input id="occurredAt" type="datetime-local">
+<input id="odo" type="number" placeholder="Stan licznika">
+</div>
 
-    <label>Koszt</label>
-    <input id="cost" disabled />
+<div class="row">
+<input id="liters" type="number" step="0.01" placeholder="Litry">
+<input id="ppl" type="number" step="0.01" placeholder="Cena za litr">
+</div>
 
-    <div class="row">
-      <input id="photoOdo" type="file" accept="image/*" capture="environment" />
-      <input id="photoRec" type="file" accept="image/*" capture="environment" />
-    </div>
+<button onclick="addFuel()">Zapisz tankowanie</button>
+<div id="fuelMsg"></div>
+</div>
 
-    <button onclick="addFuel()">Zapisz tankowanie</button>
-    <div id="fuelMsg" class="muted"></div>
-  </div>
-
-  <!-- HISTORIA -->
-  <div class="card hide" id="histCard">
-    <h3>Tankowania (ostatnie 50)</h3>
-    <div id="histMsg" class="muted"></div>
-    <table id="histTbl" class="hide">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Licznik</th>
-          <th>Litry</th>
-          <th>l/100</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+<div class="card hide" id="histCard">
+<h3>Tankowania (ostatnie 50)</h3>
+<div id="histMsg"></div>
+<table id="histTbl" class="hide">
+<thead>
+<tr>
+<th>Data</th>
+<th>Licznik</th>
+<th>Litry</th>
+<th>l/100</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
 
 </div>
 
 <script>
 let sb=null,myProfile=null,myVehicleId=null;
 
-function nowForDateTimeLocal(){
-  const d=new Date();
-  const pad=n=>String(n).padStart(2,'0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+const VEHICLE_1='33474aad-2d3c-4777-80f7-62eb16ce4434';
+const VEHICLE_2='4b8b8534-3f12-41e1-af1a-24fb4f710cb3';
 
-function calcCost(){
-  const l=parseFloat(document.getElementById('liters').value||'0');
-  const p=parseFloat(document.getElementById('ppl').value||'0');
-  document.getElementById('cost').value=(l*p).toFixed(2);
+function nowLocal(){
+const d=new Date();
+const p=n=>String(n).padStart(2,'0');
+return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
 function saveCfg(){
-  localStorage.setItem('SB_URL',sbUrl.value.trim());
-  localStorage.setItem('SB_KEY',sbKey.value.trim());
-  location.reload();
+localStorage.setItem('SB_URL',sbUrl.value.trim());
+localStorage.setItem('SB_KEY',sbKey.value.trim());
+location.reload();
 }
 
 function loadCfg(){
-  const url=localStorage.getItem('SB_URL')||'';
-  const key=localStorage.getItem('SB_KEY')||'';
-  sbUrl.value=url;
-  sbKey.value=key;
-  return{url,key};
+const url=localStorage.getItem('SB_URL')||'';
+const key=localStorage.getItem('SB_KEY')||'';
+sbUrl.value=url;sbKey.value=key;
+return{url,key};
 }
 
 function show(id,on=true){document.getElementById(id).classList.toggle('hide',!on)}
 
 async function init(){
-  const{url,key}=loadCfg();
-  if(!url||!key){show('cfgCard',true);return}
-  show('cfgCard',false);show('authCard',true);
-  sb=window.supabase.createClient(url,key);
-  const{data:{session}}=await sb.auth.getSession();
-  if(session)afterLogin();
+const{url,key}=loadCfg();
+if(!url||!key)return;
+show('cfgCard',false);show('authCard',true);
+sb=window.supabase.createClient(url,key);
+const{data:{session}}=await sb.auth.getSession();
+if(session)afterLogin();
 }
 
 async function login(){
-  const{error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:pass.value});
-  if(error){authMsg.innerHTML=`<span class="err">${error.message}</span>`;return}
-  afterLogin();
+const{error}=await sb.auth.signInWithPassword({email:email.value,password:pass.value});
+if(error){authMsg.innerHTML=`<span class="err">${error.message}</span>`;return;}
+afterLogin();
 }
 
 async function logout(){
-  if(sb)await sb.auth.signOut();
-  show('appCard',false);show('fuelCard',false);show('histCard',false);show('authCard',true);
+if(sb)await sb.auth.signOut();
+show('appCard',false);show('fuelCard',false);show('histCard',false);show('authCard',true);
 }
 
 async function afterLogin(){
-  const{data:{user}}=await sb.auth.getUser();
-  const{data:prof}=await sb.from('profiles').select('id,full_name,role').eq('id',user.id).single();
-  myProfile=prof;
-  const{data:vId}=await sb.rpc('my_vehicle_id');
-  myVehicleId=vId||null;
+const{data:{user}}=await sb.auth.getUser();
+const{data:prof}=await sb.from('profiles').select('id,full_name,role').eq('id',user.id).single();
+myProfile=prof;
 
-  show('authCard',false);show('appCard',true);
-  show('fuelCard',true);show('histCard',true);
+const{data:vId}=await sb.rpc('my_vehicle_id');
+myVehicleId=vId||null;
 
-  who.innerHTML=`Zalogowany: <b>${myProfile.full_name}</b>`;
-  occurredAt.value=nowForDateTimeLocal();
-  loadHistory();
+show('authCard',false);
+show('appCard',true);
+show('fuelCard',true);
+show('histCard',true);
+
+who.innerHTML=`Zalogowany: <b>${myProfile.full_name}</b>`;
+occurredAt.value=nowLocal();
+
+loadHistory();
 }
 
 async function addFuel(){
-  const occurred=occurredAt.value?new Date(occurredAt.value).toISOString():new Date().toISOString();
-  const{data}=await sb.from('fuel_entries').insert({
-    vehicle_id:myVehicleId,
-    driver_id:myProfile.id,
-    occurred_at:occurred,
-    odometer_km:parseInt(odo.value||'0'),
-    liters:parseFloat(liters.value||'0'),
-    price_per_l:parseFloat(ppl.value||'0')
-  }).select('id').single();
+const occurred=occurredAt.value?new Date(occurredAt.value).toISOString():new Date().toISOString();
 
-  fuelMsg.innerHTML=`<span class="ok">Zapisano tankowanie.</span>`;
-  loadHistory();
+await sb.from('fuel_entries').insert({
+vehicle_id:myVehicleId,
+driver_id:myProfile.id,
+occurred_at:occurred,
+odometer_km:parseInt(odo.value||'0'),
+liters:parseFloat(liters.value||'0'),
+price_per_l:parseFloat(ppl.value||'0')
+});
+
+fuelMsg.innerHTML='<span class="ok">Zapisano</span>';
+loadHistory();
 }
 
 async function loadHistory(){
-  const {data,error} = await sb
-    .from('fuel_entries')
-    .select('occurred_at,odometer_km,liters')
-    .order('occurred_at',{ascending:false})
-    .limit(50);
+const{data,error}=await sb.from('fuel_entries')
+.select('vehicle_id,occurred_at,odometer_km,liters')
+.order('occurred_at',{ascending:false})
+.limit(50);
 
-  if(error){
-    histMsg.innerHTML = `<span class="err">${error.message}</span>`;
-    return;
-  }
+if(error){histMsg.innerHTML=`<span class="err">${error.message}</span>`;return;}
 
-  histTbl.classList.remove('hide');
-  const body = histTbl.querySelector('tbody');
-  body.innerHTML = '';
+histTbl.classList.remove('hide');
+histTbl.querySelector('tbody').innerHTML='';
 
-  for(let i=0;i<data.length;i++){
-    const r = data[i];
-    const prev = data[i+1];
+for(let i=0;i<data.length;i++){
+const r=data[i];
+const prev=data[i+1];
 
-    let l100 = '';
-    let l100Display = '';
+let l100=null;
+if(prev){
+const km=r.odometer_km-prev.odometer_km;
+if(km>0)l100=(r.liters/km)*100;
+}
 
-    if(prev){
-      const km = r.odometer_km - prev.odometer_km;
-      if(km > 0){
-        l100 = ((r.liters / km) * 100);
-      }
-    }
+let threshold=null;
+if(r.vehicle_id===VEHICLE_1)threshold=7.5;
+if(r.vehicle_id===VEHICLE_2)threshold=9.0;
 
-    // 🔴 PROGI SPALANIA
-    let threshold = null;
+let l100Html='—';
+if(l100!==null){
+const val=l100.toFixed(2);
+if(threshold && l100>threshold){
+l100Html=`<span style="color:#ff4d4d;font-weight:700">${val}</span>`;
+}else{
+l100Html=`<b>${val}</b>`;
+}
+}
 
-    // Jeśli masz dokładnie takie nazwy tablic rejestracyjnych:
-    // możesz zamiast vehicle_id użyć plate (jeśli przechowujesz)
-    // Tu zakładamy że sprawdzamy po vehicle_id przypisanym do kierowcy
-
-    if(myVehicleId){
-      // UWAGA: tu wpisujemy ręcznie progi wg pojazdu
-      // jeśli masz 2 konkretne ID pojazdów możesz je tu wpisać
-
-      // przykład:
-      // if(myVehicleId === 'UUID_POJAZD_1') threshold = 7.5;
-      // if(myVehicleId === 'UUID_POJAZD_2') threshold = 9.0;
-
-      // ALE prostsze: sprawdzamy po nazwie rejestracyjnej jeśli ją mamy
-    }
-
-    // Prostsza wersja — sprawdzamy po fragmencie ID (jeśli wiesz które jest które)
-    // NAJLEPIEJ: podaj mi UUID obu pojazdów to wpiszę dokładnie
-
-    // Tymczasowo zrobimy wersję bazującą na kolejności:
-    // jeśli to pierwszy pojazd kierowcy → 7.5
-    // jeśli drugi → 9.0
-
-    // Jeśli masz tylko jeden pojazd na kierowcę:
-    threshold = 7.5; // <- zmień ręcznie dla danego pojazdu jeśli potrzeba
-
-    if(l100 && threshold){
-      if(l100 > threshold){
-        l100Display = `<span style="color:#ff5c5c;font-weight:bold">${l100.toFixed(2)}</span>`;
-      }else{
-        l100Display = `<span>${l100.toFixed(2)}</span>`;
-      }
-    }
-
-    const dateOnly = new Date(r.occurred_at).toLocaleDateString('pl-PL');
-
-    body.insertAdjacentHTML('beforeend',`
-      <tr>
-        <td>${dateOnly}</td>
-        <td>${r.odometer_km}</td>
-        <td>${r.liters}</td>
-        <td><b>${l100Display}</b></td>
-      </tr>
-    `);
-  }
+histTbl.querySelector('tbody').insertAdjacentHTML('beforeend',`
+<tr>
+<td>${new Date(r.occurred_at).toLocaleDateString('pl-PL')}</td>
+<td>${r.odometer_km}</td>
+<td>${r.liters}</td>
+<td>${l100Html}</td>
+</tr>
+`);
+}
 }
 
 init();
