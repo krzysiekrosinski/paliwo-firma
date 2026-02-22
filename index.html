@@ -32,15 +32,15 @@
   <div class="card" id="cfgCard">
     <div class="pill">Krok 1</div>
     <h3>Konfiguracja połączenia</h3>
-    <p class="muted">Wklej z Supabase: <b>Project URL</b> i <b>anon public key</b> (Project Settings → API).</p>
+    <p class="muted">Wklej z Supabase: <b>Project URL</b> i <b>publishable key</b> (Settings → API Keys).</p>
     <div class="row">
       <div>
         <label>Supabase URL</label>
         <input id="sbUrl" placeholder="https://xxxx.supabase.co" />
       </div>
       <div>
-        <label>Anon public key</label>
-        <input id="sbKey" placeholder="eyJhbGciOi..." />
+        <label>Publishable key</label>
+        <input id="sbKey" placeholder="sb_publishable_..." />
       </div>
     </div>
     <button onclick="saveCfg()">Zapisz konfigurację</button>
@@ -160,7 +160,8 @@
 </div>
 
 <script>
-  let supabase = null;
+  // UWAGA: używamy zmiennej "sb", żeby nie kolidować z niczym innym
+  let sb = null;
   let myProfile = null;
   let myVehicleId = null;
 
@@ -190,22 +191,26 @@
     return {url, key};
   }
 
-  function show(id, on=true){ document.getElementById(id).classList.toggle('hide', !on); }
+  function show(id, on=true){
+    document.getElementById(id).classList.toggle('hide', !on);
+  }
 
   async function init(){
     const {url, key} = loadCfg();
+
     if(!url || !key){
       show('cfgCard', true);
       show('authCard', false);
       return;
     }
+
     show('cfgCard', false);
     show('authCard', true);
 
-    supabase = window.supabase.createClient(url, key);
+    sb = window.supabase.createClient(url, key);
 
     // jeśli jest sesja – wznów
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sb.auth.getSession();
     if(session) await afterLogin();
   }
 
@@ -215,36 +220,46 @@
     const msg = document.getElementById('authMsg');
     msg.textContent = 'Logowanie...';
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if(error){ msg.innerHTML = `<span class="err">${error.message}</span>`; return; }
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if(error){
+      msg.innerHTML = `<span class="err">${error.message}</span>`;
+      return;
+    }
 
     msg.innerHTML = `<span class="ok">Zalogowano.</span>`;
     await afterLogin();
   }
 
   async function logout(){
-    if(supabase) await supabase.auth.signOut();
-    myProfile = null; myVehicleId = null;
-    show('appCard', false); show('fuelCard', false); show('statsCard', false); show('histCard', false);
+    if(sb) await sb.auth.signOut();
+    myProfile = null;
+    myVehicleId = null;
+
+    show('appCard', false);
+    show('fuelCard', false);
+    show('statsCard', false);
+    show('histCard', false);
     show('authCard', true);
+
     document.getElementById('authMsg').textContent = '';
   }
 
   async function afterLogin(){
     // pobierz profil (rola + nazwa)
-    const { data: prof, error: perr } = await supabase
+    const { data: prof, error: perr } = await sb
       .from('profiles')
       .select('id, full_name, role')
       .single();
+
     if(perr){
-      document.getElementById('authMsg').innerHTML = `<span class="err">Brak profilu w tabeli profiles dla tego konta.</span>`;
+      document.getElementById('authMsg').innerHTML =
+        `<span class="err">Brak profilu w tabeli profiles dla tego konta.</span>`;
       return;
     }
     myProfile = prof;
 
     // pobierz vehicle_id kierowcy przez RPC (my_vehicle_id)
-    const { data: vId, error: verr } = await supabase.rpc('my_vehicle_id');
-    // admin może nie mieć pojazdu – to OK
+    const { data: vId } = await sb.rpc('my_vehicle_id');
     myVehicleId = vId || null;
 
     show('authCard', false);
@@ -264,7 +279,6 @@
       await loadStats();
       await loadHistory();
     } else {
-      // na razie adminowi pokazujemy tylko info — rozbudujemy w kolejnym kroku
       document.getElementById('appCard').insertAdjacentHTML('beforeend',
         `<div class="muted" style="margin-top:8px">Admin panel rozbudujemy za chwilę (pojazdy, przypisania, serwis). Teraz testujemy część kierowcy.</div>`
       );
@@ -280,10 +294,13 @@
     const liters = parseFloat(document.getElementById('liters').value || '0');
     const price_per_l = parseFloat(document.getElementById('ppl').value || '0');
 
-    if(!odometer_km || liters <= 0){ fuelMsg.innerHTML = `<span class="err">Uzupełnij licznik i litry.</span>`; return; }
+    if(!odometer_km || liters <= 0){
+      fuelMsg.innerHTML = `<span class="err">Uzupełnij licznik i litry.</span>`;
+      return;
+    }
 
     // 1) insert tankowania i weź id
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('fuel_entries')
       .insert({
         vehicle_id: myVehicleId,
@@ -296,7 +313,10 @@
       .select('id')
       .single();
 
-    if(error){ fuelMsg.innerHTML = `<span class="err">${error.message}</span>`; return; }
+    if(error){
+      fuelMsg.innerHTML = `<span class="err">${error.message}</span>`;
+      return;
+    }
 
     const fuelEntryId = data.id;
 
@@ -309,13 +329,13 @@
     try{
       if(odoFile){
         const path = `${myVehicleId}/odometer/${fuelEntryId}.jpg`;
-        const up = await supabase.storage.from('fuel-photos').upload(path, odoFile, { upsert:false });
+        const up = await sb.storage.from('fuel-photos').upload(path, odoFile, { upsert:false });
         if(up.error) throw up.error;
         odometer_photo = path;
       }
       if(recFile){
         const path = `${myVehicleId}/receipt/${fuelEntryId}.jpg`;
-        const up = await supabase.storage.from('fuel-photos').upload(path, recFile, { upsert:false });
+        const up = await sb.storage.from('fuel-photos').upload(path, recFile, { upsert:false });
         if(up.error) throw up.error;
         receipt_photo = path;
       }
@@ -323,14 +343,12 @@
       fuelMsg.innerHTML = `<span class="err">Tankowanie zapisane, ale upload zdjęcia nie wyszedł: ${e.message}</span>`;
     }
 
-    // 3) zapisz ścieżki zdjęć do rekordu (admin-only UPDATE? u Ciebie UPDATE zdjęć ma admin; więc kierowca nie może update)
-    // => Zrobimy to tak: ścieżki zostawimy na razie w UI, a docelowo dodamy funkcję RPC, która pozwoli kierowcy dopisać ścieżki TYLKO do własnego wpisu.
-    // Na teraz: pokaż info.
-    fuelMsg.innerHTML = `<span class="ok">Zapisano tankowanie.</span>` +
+    fuelMsg.innerHTML =
+      `<span class="ok">Zapisano tankowanie.</span>` +
       (odometer_photo ? ` licznik✅` : '') + (receipt_photo ? ` WZ✅` : '') +
-      `<div class="muted">Uwaga: dopiszemy jeszcze bezpieczny zapis ścieżek zdjęć do rekordu (kierowca bez edycji danych).</div>`;
+      `<div class="muted">Następny krok: dopniemy zapis ścieżek zdjęć do rekordu (żeby dało się je otwierać w historii).</div>`;
 
-    // odśwież
+    // wyczyść formularz
     document.getElementById('odo').value = '';
     document.getElementById('liters').value = '';
     document.getElementById('ppl').value = '';
@@ -349,17 +367,22 @@
     const body = tbl.querySelector('tbody');
     body.innerHTML = '';
 
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('monthly_fuel_stats')
       .select('month_start, liters_in_month, km_in_month, avg_l_per_100km')
       .order('month_start', { ascending: false })
       .limit(24);
 
-    if(error){ msg.innerHTML = `<span class="err">${error.message}</span>`; tbl.classList.add('hide'); return; }
+    if(error){
+      msg.innerHTML = `<span class="err">${error.message}</span>`;
+      tbl.classList.add('hide');
+      return;
+    }
+
     msg.textContent = '';
     tbl.classList.remove('hide');
 
-    for(const r of (data||[])){
+    for(const r of (data || [])){
       const m = String(r.month_start).slice(0,7);
       body.insertAdjacentHTML('beforeend', `
         <tr>
@@ -379,17 +402,22 @@
     const body = tbl.querySelector('tbody');
     body.innerHTML = '';
 
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('fuel_entries')
       .select('occurred_at, odometer_km, liters, price_per_l, total_cost')
       .order('occurred_at', { ascending: false })
       .limit(50);
 
-    if(error){ msg.innerHTML = `<span class="err">${error.message}</span>`; tbl.classList.add('hide'); return; }
+    if(error){
+      msg.innerHTML = `<span class="err">${error.message}</span>`;
+      tbl.classList.add('hide');
+      return;
+    }
+
     msg.textContent = '';
     tbl.classList.remove('hide');
 
-    for(const r of (data||[])){
+    for(const r of (data || [])){
       const d = new Date(r.occurred_at);
       const ds = d.toLocaleString('pl-PL');
       body.insertAdjacentHTML('beforeend', `
