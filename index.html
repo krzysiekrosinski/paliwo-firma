@@ -6,83 +6,50 @@
 <title>Paliwo – Firma</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-*{ box-sizing:border-box; }
-html,body{ width:100%; overflow-x:hidden; }
+*{box-sizing:border-box}
+html,body{margin:0;background:#0b1020;color:#eaf0ff;font-family:system-ui;overflow-x:hidden}
+.wrap{max-width:1000px;margin:auto;padding:12px}
+.card{background:#121a33;border:1px solid #23305a;border-radius:16px;padding:14px;margin:12px 0}
+h2{margin:6px 0 4px}
+h3{margin:0 0 10px}
+.small{color:#b8c7ff;font-size:13px;margin-bottom:10px}
 
-body{
-  font-family:system-ui;
-  margin:0;
-  background:#0b1020;
-  color:#eaf0ff;
-}
-
-.wrap{
-  max-width:1000px;
-  margin:auto;
-  padding:12px;
-}
-
-.card{
-  background:#121a33;
-  border:1px solid #23305a;
-  border-radius:14px;
-  padding:14px;
-  margin:12px 0;
-  overflow:hidden;
-}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stack{display:flex;flex-direction:column;gap:10px}
+label{font-size:13px;color:#b8c7ff}
 
 input,button{
-  display:block;
-  width:100%;
-  max-width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid #2a3a6b;
-  background:#0b1020;
-  color:#eaf0ff;
-  font-size:16px;
+width:100%;
+padding:12px;
+border-radius:12px;
+border:1px solid #2a3a6b;
+background:#0b1020;
+color:#eaf0ff;
+font-size:16px
 }
 
-button{
-  cursor:pointer;
-  border:none;
-  background:#4b7dff;
+input[type="file"]{
+padding:8px
 }
 
-button.secondary{
-  background:#2a3a6b;
-}
+button{border:none;background:#4b7dff;cursor:pointer}
+button.secondary{background:#2a3a6b}
 
-.row{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-  gap:10px;
-}
+.msg{margin-top:8px}
+.ok{color:#8dffb0;font-weight:600}
+.err{color:#ff4d4d;font-weight:600}
+
+.table-wrapper{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border-bottom:1px solid #23305a;padding:10px 8px;text-align:left;white-space:nowrap}
+
+.hide{display:none}
 
 @media(max-width:768px){
-  .row{ grid-template-columns:1fr; }
+.row{grid-template-columns:1fr}
 }
-
-.table-wrapper{ overflow-x:auto; }
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-
-th,td{
-  border-bottom:1px solid #23305a;
-  padding:8px;
-  text-align:left;
-}
-
-.ok{color:#8dffb0}
-.err{color:#ff4d4d}
-.hide{display:none}
 </style>
 </head>
 
@@ -90,16 +57,25 @@ th,td{
 <div class="wrap">
 
 <h2>📱 Rejestr tankowań</h2>
+<div class="small">Kierowca widzi tylko swój pojazd. Admin widzi wszystko.</div>
 
+<!-- KONFIG -->
 <div class="card" id="cfgCard">
 <h3>Konfiguracja</h3>
 <div class="row">
-<input id="sbUrl" placeholder="Supabase URL">
-<input id="sbKey" placeholder="Publishable key">
+<div class="stack">
+<label>Supabase URL</label>
+<input id="sbUrl">
+</div>
+<div class="stack">
+<label>Publishable key</label>
+<input id="sbKey">
+</div>
 </div>
 <button onclick="saveCfg()">Zapisz</button>
 </div>
 
+<!-- LOGOWANIE -->
 <div class="card hide" id="authCard">
 <h3>Logowanie</h3>
 <div class="row">
@@ -110,37 +86,56 @@ th,td{
 <button onclick="login()">Zaloguj</button>
 <button class="secondary" onclick="logout()">Wyloguj</button>
 </div>
-<div id="authMsg"></div>
+<div id="authMsg" class="msg"></div>
 </div>
 
+<!-- PANEL -->
 <div class="card hide" id="appCard">
-<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+<div style="display:flex;justify-content:space-between;flex-wrap:wrap">
 <div id="who"></div>
 <button class="secondary" onclick="logout()">Wyloguj</button>
 </div>
 </div>
 
+<!-- DODAJ TANKOWANIE -->
 <div class="card hide" id="fuelCard">
 <h3>Dodaj tankowanie</h3>
 
-<div class="row">
+<div class="stack">
+
+<label>Data i godzina</label>
 <input id="occurredAt" type="datetime-local">
-<input id="odo" type="number" placeholder="Stan licznika">
-</div>
+
+<label>Stan licznika (km)</label>
+<input id="odo" type="number">
 
 <div class="row">
-<input id="liters" type="number" step="0.01" placeholder="Litry">
-<input id="ppl" type="number" step="0.01" placeholder="Cena za litr">
+<div class="stack">
+<label>Litry</label>
+<input id="liters" type="number" step="0.01">
 </div>
+<div class="stack">
+<label>Cena za litr</label>
+<input id="ppl" type="number" step="0.01">
+</div>
+</div>
+
+<label>Zdjęcie licznika</label>
+<input id="photoOdo" type="file" accept="image/*" capture="environment">
+
+<label>Zdjęcie WZ</label>
+<input id="photoRec" type="file" accept="image/*" capture="environment">
 
 <button onclick="addFuel()">Zapisz tankowanie</button>
-<div id="fuelMsg"></div>
+<div id="fuelMsg" class="msg"></div>
+
+</div>
 </div>
 
+<!-- HISTORIA -->
 <div class="card hide" id="histCard">
 <h3>Tankowania (ostatnie 50)</h3>
-<button onclick="exportExcel()">Eksport do Excel</button>
-<div id="histMsg"></div>
+<div id="histMsg" class="msg"></div>
 <div class="table-wrapper">
 <table id="histTbl" class="hide">
 <thead>
@@ -156,23 +151,10 @@ th,td{
 </div>
 </div>
 
-<div class="card hide" id="serviceCard">
-<h3>Serwis pojazdu</h3>
-<div class="row">
-<input id="serviceDate" type="date">
-<input id="serviceOdo" type="number" placeholder="Stan licznika">
-</div>
-<input id="serviceDesc" placeholder="Opis serwisu">
-<input id="serviceCost" type="number" step="0.01" placeholder="Koszt">
-<button onclick="addService()">Dodaj serwis</button>
-<div id="serviceMsg"></div>
-</div>
-
 </div>
 
 <script>
 let sb=null,myProfile=null,myVehicleId=null;
-
 const VEHICLE_1='33474aad-2d3c-4777-80f7-62eb16ce4434';
 const VEHICLE_2='4b8b8534-3f12-41e1-af1a-24fb4f710cb3';
 
@@ -196,7 +178,7 @@ return{url,key};
 }
 
 function show(id,on=true){
-document.getElementById(id).classList.toggle('hide',!on)
+document.getElementById(id).classList.toggle('hide',!on);
 }
 
 async function init(){
@@ -220,7 +202,6 @@ if(sb)await sb.auth.signOut();
 show('appCard',false);
 show('fuelCard',false);
 show('histCard',false);
-show('serviceCard',false);
 show('authCard',true);
 }
 
@@ -235,44 +216,81 @@ show('authCard',false);
 show('appCard',true);
 show('fuelCard',true);
 show('histCard',true);
-show('serviceCard',true);
 
 who.innerHTML=`Zalogowany: <b>${myProfile.full_name}</b>`;
 occurredAt.value=nowLocal();
-
 loadHistory();
 }
 
 async function addFuel(){
+fuelMsg.textContent='Zapisywanie...';
+
 const occurred=occurredAt.value?new Date(occurredAt.value).toISOString():new Date().toISOString();
 const newOdo=parseInt(odo.value||'0');
+const l=parseFloat(liters.value||'0');
+const price=parseFloat(ppl.value||'0');
 
-if(!newOdo){fuelMsg.innerHTML='<span class="err">Podaj stan licznika</span>';return;}
+if(!newOdo||l<=0){
+fuelMsg.innerHTML='<span class="err">Uzupełnij licznik i litry.</span>';
+return;
+}
 
+// blokada cofnięcia licznika
 const{data:lastEntry}=await sb.from('fuel_entries')
 .select('odometer_km')
 .eq('vehicle_id',myVehicleId)
 .order('occurred_at',{ascending:false})
 .limit(1);
 
-if(lastEntry && lastEntry.length>0){
-const lastOdo=lastEntry[0].odometer_km;
-if(newOdo<lastOdo){
-fuelMsg.innerHTML=`<span class="err">Nie można cofnąć licznika. Ostatni stan: ${lastOdo} km</span>`;
+if(lastEntry&&lastEntry.length>0){
+if(newOdo<lastEntry[0].odometer_km){
+fuelMsg.innerHTML=`<span class="err">Nie można cofnąć licznika.</span>`;
 return;
 }
 }
 
-await sb.from('fuel_entries').insert({
+const{data, error}=await sb.from('fuel_entries')
+.insert({
 vehicle_id:myVehicleId,
 driver_id:myProfile.id,
 occurred_at:occurred,
 odometer_km:newOdo,
-liters:parseFloat(liters.value||'0'),
-price_per_l:parseFloat(ppl.value||'0')
-});
+liters:l,
+price_per_l:price
+})
+.select('id')
+.single();
 
-fuelMsg.innerHTML='<span class="ok">Zapisano</span>';
+if(error){
+fuelMsg.innerHTML=`<span class="err">${error.message}</span>`;
+return;
+}
+
+const fuelId=data.id;
+
+// upload zdjęć
+const odoFile=photoOdo.files[0];
+const recFile=photoRec.files[0];
+
+if(odoFile){
+await sb.storage.from('fuel-photos')
+.upload(`${myVehicleId}/odometer/${fuelId}.jpg`,odoFile,{upsert:false});
+}
+
+if(recFile){
+await sb.storage.from('fuel-photos')
+.upload(`${myVehicleId}/receipt/${fuelId}.jpg`,recFile,{upsert:false});
+}
+
+fuelMsg.innerHTML='<span class="ok">Zapisano tankowanie</span>';
+
+odo.value='';
+liters.value='';
+ppl.value='';
+photoOdo.value='';
+photoRec.value='';
+occurredAt.value=nowLocal();
+
 loadHistory();
 }
 
@@ -282,10 +300,14 @@ const{data,error}=await sb.from('fuel_entries')
 .order('occurred_at',{ascending:false})
 .limit(50);
 
-if(error){histMsg.innerHTML=`<span class="err">${error.message}</span>`;return;}
+if(error){
+histMsg.innerHTML=`<span class="err">${error.message}</span>`;
+return;
+}
 
 histTbl.classList.remove('hide');
-histTbl.querySelector('tbody').innerHTML='';
+const tbody=histTbl.querySelector('tbody');
+tbody.innerHTML='';
 
 for(let i=0;i<data.length;i++){
 const r=data[i];
@@ -302,16 +324,16 @@ if(r.vehicle_id===VEHICLE_1)threshold=7.5;
 if(r.vehicle_id===VEHICLE_2)threshold=9.0;
 
 let l100Html='—';
-if(l100!==null){
+if(l100!=null){
 const val=l100.toFixed(2);
-if(threshold && l100>threshold){
+if(threshold&&l100>threshold){
 l100Html=`<span style="color:#ff4d4d;font-weight:700">${val}</span>`;
 }else{
 l100Html=`<b>${val}</b>`;
 }
 }
 
-histTbl.querySelector('tbody').insertAdjacentHTML('beforeend',`
+tbody.insertAdjacentHTML('beforeend',`
 <tr>
 <td>${new Date(r.occurred_at).toLocaleDateString('pl-PL')}</td>
 <td>${r.odometer_km}</td>
@@ -320,35 +342,6 @@ histTbl.querySelector('tbody').insertAdjacentHTML('beforeend',`
 </tr>
 `);
 }
-}
-
-async function addService(){
-await sb.from('vehicle_services').insert({
-vehicle_id:myVehicleId,
-service_date:serviceDate.value,
-odometer_km:parseInt(serviceOdo.value||'0'),
-description:serviceDesc.value,
-cost:parseFloat(serviceCost.value||'0')
-});
-serviceMsg.innerHTML='<span class="ok">Dodano serwis</span>';
-}
-
-async function exportExcel(){
-const{data}=await sb.from('fuel_entries')
-.select('occurred_at,odometer_km,liters')
-.eq('vehicle_id',myVehicleId)
-.order('occurred_at',{ascending:true});
-
-const rows=data.map(r=>({
-Data:new Date(r.occurred_at).toLocaleDateString('pl-PL'),
-Licznik:r.odometer_km,
-Litry:r.liters
-}));
-
-const ws=XLSX.utils.json_to_sheet(rows);
-const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Tankowania");
-XLSX.writeFile(wb,"tankowania.xlsx");
 }
 
 init();
