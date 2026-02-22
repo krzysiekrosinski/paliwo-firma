@@ -437,9 +437,21 @@ const { data: prof, error: perr } = await sb
     msg.textContent = '';
     tbl.classList.remove('hide');
 
-    for(const r of (data || [])){
+    let prevOdo = null;
+
+    for(const r of (data||[])){
       const d = new Date(r.occurred_at);
       const ds = d.toLocaleString('pl-PL');
+
+      let l100 = '';
+      if(prevOdo !== null){
+        const km = prevOdo - r.odometer_km; // bo lista jest od najnowszych
+        if(km > 0){
+          l100 = ((Number(r.liters) / km) * 100).toFixed(2);
+        }
+      }
+      prevOdo = r.odometer_km;
+
       body.insertAdjacentHTML('beforeend', `
         <tr>
           <td>${ds}</td>
@@ -447,6 +459,7 @@ const { data: prof, error: perr } = await sb
           <td>${r.liters}</td>
           <td>${r.price_per_l}</td>
           <td><b>${r.total_cost}</b></td>
+          <td><b>${l100}</b></td>
         </tr>
       `);
     }
