@@ -204,26 +204,38 @@ async function addFuel(){
 }
 
 async function loadHistory(){
-  const{data,error}=await sb.from('fuel_entries')
+  const {data,error} = await sb
+    .from('fuel_entries')
     .select('occurred_at,odometer_km,liters')
     .order('occurred_at',{ascending:false})
     .limit(50);
 
-  if(error){histMsg.innerHTML=`<span class="err">${error.message}</span>`;return}
+  if(error){
+    histMsg.innerHTML = `<span class="err">${error.message}</span>`;
+    return;
+  }
+
   histTbl.classList.remove('hide');
-  histTbl.querySelector('tbody').innerHTML='';
+  histTbl.querySelector('tbody').innerHTML = '';
 
   for(let i=0;i<data.length;i++){
-    const r=data[i];
-    const prev=data[i+1];
-    let l100='';
+    const r = data[i];
+    const prev = data[i+1];
+
+    let l100 = '';
     if(prev){
-      const km=r.odometer_km-prev.odometer_km;
-      if(km>0)l100=((r.liters/km)*100).toFixed(2);
+      const km = r.odometer_km - prev.odometer_km;
+      if(km > 0){
+        l100 = ((r.liters / km) * 100).toFixed(2);
+      }
     }
+
+    // 🔹 TUTAJ usuwamy godzinę — pokazujemy tylko datę
+    const dateOnly = new Date(r.occurred_at).toLocaleDateString('pl-PL');
+
     histTbl.querySelector('tbody').insertAdjacentHTML('beforeend',`
       <tr>
-        <td>${new Date(r.occurred_at).toLocaleString('pl-PL')}</td>
+        <td>${dateOnly}</td>
         <td>${r.odometer_km}</td>
         <td>${r.liters}</td>
         <td><b>${l100}</b></td>
