@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Paliwo – Firma</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:0;background:#0b1020;color:#eaf0ff}
+    .wrap{max-width:980px;margin:0 auto;padding:16px}
+    .card{background:#121a33;border:1px solid #23305a;border-radius:14px;padding:14px;margin:12px 0}
+    input,select,button,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #2a3a6b;background:#0b1020;color:#eaf0ff}
+    label{display:block;margin:10px 0 6px;color:#bcd0ff}
+    button{cursor:pointer;border:none;background:#4b7dff}
+    button.secondary{background:#2a3a6b}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .muted{color:#9bb0e6;font-size:13px}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:#21305a;border:1px solid #2a3a6b;color:#bcd0ff;font-size:12px}
+    table{width:100%;border-collapse:collapse}
+    th,td{border-bottom:1px solid #23305a;padding:10px;text-align:left;font-size:14px}
+    .ok{color:#8dffb0}
+    .err{color:#ff9aa5}
+    .hide{display:none}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h2>📱 Rejestr tankowań</h2>
+  <div class="muted">Kierowca widzi tylko swój pojazd. Admin widzi wszystko.</div>
+
+  <!-- KONFIG -->
+  <div class="card" id="cfgCard">
+    <div class="pill">Krok 1</div>
+    <h3>Konfiguracja połączenia</h3>
+    <p class="muted">Wklej z Supabase: <b>Project URL</b> i <b>anon public key</b> (Project Settings → API).</p>
+    <div class="row">
+      <div>
+        <label>Supabase URL</label>
+        <input id="sbUrl" placeholder="https://xxxx.supabase.co" />
+      </div>
+      <div>
+        <label>Anon public key</label>
+        <input id="sbKey" placeholder="eyJhbGciOi..." />
+      </div>
+    </div>
+    <button onclick="saveCfg()">Zapisz konfigurację</button>
+    <div class="muted">Tip: po zapisaniu odśwież stronę.</div>
+  </div>
+
+  <!-- LOGOWANIE -->
+  <div class="card hide" id="authCard">
+    <div class="pill">Krok 2</div>
+    <h3>Logowanie</h3>
+    <div class="row">
+      <div>
+        <label>Email</label>
+        <input id="email" placeholder="kierowca@firma.pl" />
+      </div>
+      <div>
+        <label>Hasło</label>
+        <input id="pass" type="password" placeholder="********" />
+      </div>
+    </div>
+    <div class="row">
+      <button onclick="login()">Zaloguj</button>
+      <button class="secondary" onclick="logout()">Wyloguj</button>
+    </div>
+    <div id="authMsg" class="muted"></div>
+  </div>
+
+  <!-- APLIKACJA -->
+  <div class="card hide" id="appCard">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+      <div>
+        <h3 style="margin:0">Panel</h3>
+        <div class="muted" id="who"></div>
+      </div>
+      <button class="secondary" onclick="logout()">Wyloguj</button>
+    </div>
+  </div>
+
+  <!-- DODAJ TANKOWANIE -->
+  <div class="card hide" id="fuelCard">
+    <div class="pill">Tankowanie</div>
+    <h3>Dodaj tankowanie</h3>
+
+    <div class="row">
+      <div>
+        <label>Data i godzina (automatycznie)</label>
+        <input id="occurredAt" disabled />
+      </div>
+      <div>
+        <label>Stan licznika (km)</label>
+        <input id="odo" type="number" min="0" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Litry</label>
+        <input id="liters" type="number" step="0.01" min="0" oninput="calcCost()" />
+      </div>
+      <div>
+        <label>Cena za litr</label>
+        <input id="ppl" type="number" step="0.01" min="0" oninput="calcCost()" />
+      </div>
+    </div>
+
+    <label>Koszt (liczy się sam)</label>
+    <input id="cost" disabled />
+
+    <div class="row">
+      <div>
+        <label>Zdjęcie licznika</label>
+        <input id="photoOdo" type="file" accept="image/*" capture="environment" />
+        <div class="muted">Telefon: otworzy aparat.</div>
+      </div>
+      <div>
+        <label>Zdjęcie WZ</label>
+        <input id="photoRec" type="file" accept="image/*" capture="environment" />
+        <div class="muted">Telefon: otworzy aparat.</div>
+      </div>
+    </div>
+
+    <button onclick="addFuel()">Zapisz tankowanie</button>
+    <div id="fuelMsg" class="muted"></div>
+  </div>
+
+  <!-- SPALANIE MIESIĘCZNE -->
+  <div class="card hide" id="statsCard">
+    <div class="pill">Spalanie</div>
+    <h3>Średnie spalanie miesięczne</h3>
+    <div class="muted">Liczone: (stan końca miesiąca – stan końca poprzedniego) / paliwo tylko z bieżącego miesiąca.</div>
+    <div id="statsMsg" class="muted"></div>
+    <table id="statsTbl" class="hide">
+      <thead>
+        <tr>
+          <th>Miesiąc</th><th>Litry</th><th>Km</th><th>l/100 km</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- HISTORIA -->
+  <div class="card hide" id="histCard">
+    <div class="pill">Historia</div>
+    <h3>Tankowania (ostatnie 50)</h3>
+    <div id="histMsg" class="muted"></div>
+    <table id="histTbl" class="hide">
+      <thead>
+        <tr>
+          <th>Data</th><th>Licznik</th><th>Litry</th><th>Cena</th><th>Koszt</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  let supabase = null;
+  let myProfile = null;
+  let myVehicleId = null;
+
+  function nowIsoLocal() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function calcCost(){
+    const l = parseFloat(document.getElementById('liters').value || '0');
+    const p = parseFloat(document.getElementById('ppl').value || '0');
+    document.getElementById('cost').value = (l*p).toFixed(2);
+  }
+
+  function saveCfg(){
+    localStorage.setItem('SB_URL', document.getElementById('sbUrl').value.trim());
+    localStorage.setItem('SB_KEY', document.getElementById('sbKey').value.trim());
+    location.reload();
+  }
+
+  function loadCfg(){
+    const url = localStorage.getItem('SB_URL') || '';
+    const key = localStorage.getItem('SB_KEY') || '';
+    document.getElementById('sbUrl').value = url;
+    document.getElementById('sbKey').value = key;
+    return {url, key};
+  }
+
+  function show(id, on=true){ document.getElementById(id).classList.toggle('hide', !on); }
+
+  async function init(){
+    const {url, key} = loadCfg();
+    if(!url || !key){
+      show('cfgCard', true);
+      show('authCard', false);
+      return;
+    }
+    show('cfgCard', false);
+    show('authCard', true);
+
+    supabase = window.supabase.createClient(url, key);
+
+    // jeśli jest sesja – wznów
+    const { data: { session } } = await supabase.auth.getSession();
+    if(session) await afterLogin();
+  }
+
+  async function login(){
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('pass').value;
+    const msg = document.getElementById('authMsg');
+    msg.textContent = 'Logowanie...';
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if(error){ msg.innerHTML = `<span class="err">${error.message}</span>`; return; }
+
+    msg.innerHTML = `<span class="ok">Zalogowano.</span>`;
+    await afterLogin();
+  }
+
+  async function logout(){
+    if(supabase) await supabase.auth.signOut();
+    myProfile = null; myVehicleId = null;
+    show('appCard', false); show('fuelCard', false); show('statsCard', false); show('histCard', false);
+    show('authCard', true);
+    document.getElementById('authMsg').textContent = '';
+  }
+
+  async function afterLogin(){
+    // pobierz profil (rola + nazwa)
+    const { data: prof, error: perr } = await supabase
+      .from('profiles')
+      .select('id, full_name, role')
+      .single();
+    if(perr){
+      document.getElementById('authMsg').innerHTML = `<span class="err">Brak profilu w tabeli profiles dla tego konta.</span>`;
+      return;
+    }
+    myProfile = prof;
+
+    // pobierz vehicle_id kierowcy przez RPC (my_vehicle_id)
+    const { data: vId, error: verr } = await supabase.rpc('my_vehicle_id');
+    // admin może nie mieć pojazdu – to OK
+    myVehicleId = vId || null;
+
+    show('authCard', false);
+    show('appCard', true);
+    show('fuelCard', myProfile.role === 'driver');
+    show('statsCard', myProfile.role === 'driver');
+    show('histCard', myProfile.role === 'driver');
+
+    document.getElementById('who').innerHTML =
+      `Zalogowany: <b>${myProfile.full_name}</b> <span class="pill">${myProfile.role}</span>` +
+      (myVehicleId ? ` • pojazd: <span class="pill">${myVehicleId.slice(0,8)}…</span>` : '');
+
+    // ustaw domyślną datę/godzinę
+    document.getElementById('occurredAt').value = nowIsoLocal();
+
+    if(myProfile.role === 'driver'){
+      await loadStats();
+      await loadHistory();
+    } else {
+      // na razie adminowi pokazujemy tylko info — rozbudujemy w kolejnym kroku
+      document.getElementById('appCard').insertAdjacentHTML('beforeend',
+        `<div class="muted" style="margin-top:8px">Admin panel rozbudujemy za chwilę (pojazdy, przypisania, serwis). Teraz testujemy część kierowcy.</div>`
+      );
+    }
+  }
+
+  async function addFuel(){
+    const fuelMsg = document.getElementById('fuelMsg');
+    fuelMsg.textContent = 'Zapisywanie...';
+
+    const occurred_at = new Date().toISOString(); // automatycznie (UTC)
+    const odometer_km = parseInt(document.getElementById('odo').value || '0', 10);
+    const liters = parseFloat(document.getElementById('liters').value || '0');
+    const price_per_l = parseFloat(document.getElementById('ppl').value || '0');
+
+    if(!odometer_km || liters <= 0){ fuelMsg.innerHTML = `<span class="err">Uzupełnij licznik i litry.</span>`; return; }
+
+    // 1) insert tankowania i weź id
+    const { data, error } = await supabase
+      .from('fuel_entries')
+      .insert({
+        vehicle_id: myVehicleId,
+        driver_id: myProfile.id,
+        occurred_at,
+        odometer_km,
+        liters,
+        price_per_l
+      })
+      .select('id')
+      .single();
+
+    if(error){ fuelMsg.innerHTML = `<span class="err">${error.message}</span>`; return; }
+
+    const fuelEntryId = data.id;
+
+    // 2) upload zdjęć (jeśli wybrane)
+    const odoFile = document.getElementById('photoOdo').files[0] || null;
+    const recFile = document.getElementById('photoRec').files[0] || null;
+
+    let odometer_photo = null, receipt_photo = null;
+
+    try{
+      if(odoFile){
+        const path = `${myVehicleId}/odometer/${fuelEntryId}.jpg`;
+        const up = await supabase.storage.from('fuel-photos').upload(path, odoFile, { upsert:false });
+        if(up.error) throw up.error;
+        odometer_photo = path;
+      }
+      if(recFile){
+        const path = `${myVehicleId}/receipt/${fuelEntryId}.jpg`;
+        const up = await supabase.storage.from('fuel-photos').upload(path, recFile, { upsert:false });
+        if(up.error) throw up.error;
+        receipt_photo = path;
+      }
+    }catch(e){
+      fuelMsg.innerHTML = `<span class="err">Tankowanie zapisane, ale upload zdjęcia nie wyszedł: ${e.message}</span>`;
+    }
+
+    // 3) zapisz ścieżki zdjęć do rekordu (admin-only UPDATE? u Ciebie UPDATE zdjęć ma admin; więc kierowca nie może update)
+    // => Zrobimy to tak: ścieżki zostawimy na razie w UI, a docelowo dodamy funkcję RPC, która pozwoli kierowcy dopisać ścieżki TYLKO do własnego wpisu.
+    // Na teraz: pokaż info.
+    fuelMsg.innerHTML = `<span class="ok">Zapisano tankowanie.</span>` +
+      (odometer_photo ? ` licznik✅` : '') + (receipt_photo ? ` WZ✅` : '') +
+      `<div class="muted">Uwaga: dopiszemy jeszcze bezpieczny zapis ścieżek zdjęć do rekordu (kierowca bez edycji danych).</div>`;
+
+    // odśwież
+    document.getElementById('odo').value = '';
+    document.getElementById('liters').value = '';
+    document.getElementById('ppl').value = '';
+    calcCost();
+    document.getElementById('photoOdo').value = '';
+    document.getElementById('photoRec').value = '';
+
+    await loadStats();
+    await loadHistory();
+  }
+
+  async function loadStats(){
+    const msg = document.getElementById('statsMsg');
+    msg.textContent = 'Ładowanie...';
+    const tbl = document.getElementById('statsTbl');
+    const body = tbl.querySelector('tbody');
+    body.innerHTML = '';
+
+    const { data, error } = await supabase
+      .from('monthly_fuel_stats')
+      .select('month_start, liters_in_month, km_in_month, avg_l_per_100km')
+      .order('month_start', { ascending: false })
+      .limit(24);
+
+    if(error){ msg.innerHTML = `<span class="err">${error.message}</span>`; tbl.classList.add('hide'); return; }
+    msg.textContent = '';
+    tbl.classList.remove('hide');
+
+    for(const r of (data||[])){
+      const m = String(r.month_start).slice(0,7);
+      body.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${m}</td>
+          <td>${(r.liters_in_month ?? '').toString()}</td>
+          <td>${(r.km_in_month ?? '').toString()}</td>
+          <td><b>${(r.avg_l_per_100km ?? '').toString()}</b></td>
+        </tr>
+      `);
+    }
+  }
+
+  async function loadHistory(){
+    const msg = document.getElementById('histMsg');
+    msg.textContent = 'Ładowanie...';
+    const tbl = document.getElementById('histTbl');
+    const body = tbl.querySelector('tbody');
+    body.innerHTML = '';
+
+    const { data, error } = await supabase
+      .from('fuel_entries')
+      .select('occurred_at, odometer_km, liters, price_per_l, total_cost')
+      .order('occurred_at', { ascending: false })
+      .limit(50);
+
+    if(error){ msg.innerHTML = `<span class="err">${error.message}</span>`; tbl.classList.add('hide'); return; }
+    msg.textContent = '';
+    tbl.classList.remove('hide');
+
+    for(const r of (data||[])){
+      const d = new Date(r.occurred_at);
+      const ds = d.toLocaleString('pl-PL');
+      body.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${ds}</td>
+          <td>${r.odometer_km}</td>
+          <td>${r.liters}</td>
+          <td>${r.price_per_l}</td>
+          <td><b>${r.total_cost}</b></td>
+        </tr>
+      `);
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
