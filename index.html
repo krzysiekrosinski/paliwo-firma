@@ -32,34 +32,26 @@
   <div class="card" id="cfgCard">
     <div class="pill">Krok 1</div>
     <h3>Konfiguracja połączenia</h3>
-    <p class="muted">Wklej z Supabase: <b>Project URL</b> i <b>publishable key</b> (Settings → API Keys).</p>
+    <p class="muted">Wklej z Supabase: <b>Project URL</b> i <b>publishable key</b>.</p>
     <div class="row">
       <div>
         <label>Supabase URL</label>
-        <input id="sbUrl" placeholder="https://xxxx.supabase.co" />
+        <input id="sbUrl" />
       </div>
       <div>
         <label>Publishable key</label>
-        <input id="sbKey" placeholder="sb_publishable_..." />
+        <input id="sbKey" />
       </div>
     </div>
     <button onclick="saveCfg()">Zapisz konfigurację</button>
-    <div class="muted">Tip: po zapisaniu odśwież stronę.</div>
   </div>
 
   <!-- LOGOWANIE -->
   <div class="card hide" id="authCard">
-    <div class="pill">Krok 2</div>
     <h3>Logowanie</h3>
     <div class="row">
-      <div>
-        <label>Email</label>
-        <input id="email" placeholder="kierowca@firma.pl" />
-      </div>
-      <div>
-        <label>Hasło</label>
-        <input id="pass" type="password" placeholder="********" />
-      </div>
+      <input id="email" placeholder="Email" />
+      <input id="pass" type="password" placeholder="Hasło" />
     </div>
     <div class="row">
       <button onclick="login()">Zaloguj</button>
@@ -68,25 +60,24 @@
     <div id="authMsg" class="muted"></div>
   </div>
 
-  <!-- APLIKACJA -->
+  <!-- PANEL -->
   <div class="card hide" id="appCard">
-    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center">
       <div>
         <h3 style="margin:0">Panel</h3>
-        <div class="muted" id="who"></div>
+        <div id="who" class="muted"></div>
       </div>
       <button class="secondary" onclick="logout()">Wyloguj</button>
     </div>
   </div>
 
-  <!-- DODAJ TANKOWANIE -->
+  <!-- TANKOWANIE -->
   <div class="card hide" id="fuelCard">
-    <div class="pill">Tankowanie</div>
     <h3>Dodaj tankowanie</h3>
 
     <div class="row">
       <div>
-        <label>Data i godzina (automatycznie, ale można zmienić)</label>
+        <label>Data i godzina</label>
         <input id="occurredAt" type="datetime-local" />
       </div>
       <div>
@@ -96,61 +87,33 @@
     </div>
 
     <div class="row">
-      <div>
-        <label>Litry</label>
-        <input id="liters" type="number" step="0.01" min="0" oninput="calcCost()" />
-      </div>
-      <div>
-        <label>Cena za litr</label>
-        <input id="ppl" type="number" step="0.01" min="0" oninput="calcCost()" />
-      </div>
+      <input id="liters" type="number" step="0.01" min="0" placeholder="Litry" oninput="calcCost()" />
+      <input id="ppl" type="number" step="0.01" min="0" placeholder="Cena za litr" oninput="calcCost()" />
     </div>
 
-    <label>Koszt (liczy się sam)</label>
+    <label>Koszt</label>
     <input id="cost" disabled />
 
     <div class="row">
-      <div>
-        <label>Zdjęcie licznika</label>
-        <input id="photoOdo" type="file" accept="image/*" capture="environment" />
-        <div class="muted">Telefon: otworzy aparat.</div>
-      </div>
-      <div>
-        <label>Zdjęcie WZ</label>
-        <input id="photoRec" type="file" accept="image/*" capture="environment" />
-        <div class="muted">Telefon: otworzy aparat.</div>
-      </div>
+      <input id="photoOdo" type="file" accept="image/*" capture="environment" />
+      <input id="photoRec" type="file" accept="image/*" capture="environment" />
     </div>
 
     <button onclick="addFuel()">Zapisz tankowanie</button>
     <div id="fuelMsg" class="muted"></div>
   </div>
 
-  <!-- SPALANIE MIESIĘCZNE -->
-  <div class="card hide" id="statsCard">
-    <div class="pill">Spalanie</div>
-    <h3>Średnie spalanie miesięczne</h3>
-    <div class="muted">Liczone: (stan końca miesiąca – stan końca poprzedniego) / paliwo tylko z bieżącego miesiąca.</div>
-    <div id="statsMsg" class="muted"></div>
-    <table id="statsTbl" class="hide">
-      <thead>
-        <tr>
-          <th>Miesiąc</th><th>Litry</th><th>Km</th><th>l/100 km</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
   <!-- HISTORIA -->
   <div class="card hide" id="histCard">
-    <div class="pill">Historia</div>
     <h3>Tankowania (ostatnie 50)</h3>
     <div id="histMsg" class="muted"></div>
     <table id="histTbl" class="hide">
       <thead>
         <tr>
-          <th>Data</th><th>Licznik</th><th>Litry</th><th>l/100</th>
+          <th>Data</th>
+          <th>Licznik</th>
+          <th>Litry</th>
+          <th>l/100</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -160,311 +123,116 @@
 </div>
 
 <script>
-  let sb = null;
-  let myProfile = null;
-  let myVehicleId = null;
+let sb=null,myProfile=null,myVehicleId=null;
 
-  function nowForDateTimeLocal(){
-    const d = new Date();
-    const pad = n => String(n).padStart(2,'0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
+function nowForDateTimeLocal(){
+  const d=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
-  function calcCost(){
-    const l = parseFloat(document.getElementById('liters').value || '0');
-    const p = parseFloat(document.getElementById('ppl').value || '0');
-    document.getElementById('cost').value = (l*p).toFixed(2);
-  }
+function calcCost(){
+  const l=parseFloat(document.getElementById('liters').value||'0');
+  const p=parseFloat(document.getElementById('ppl').value||'0');
+  document.getElementById('cost').value=(l*p).toFixed(2);
+}
 
-  function saveCfg(){
-    localStorage.setItem('SB_URL', document.getElementById('sbUrl').value.trim());
-    localStorage.setItem('SB_KEY', document.getElementById('sbKey').value.trim());
-    location.reload();
-  }
+function saveCfg(){
+  localStorage.setItem('SB_URL',sbUrl.value.trim());
+  localStorage.setItem('SB_KEY',sbKey.value.trim());
+  location.reload();
+}
 
-  function loadCfg(){
-    const url = localStorage.getItem('SB_URL') || '';
-    const key = localStorage.getItem('SB_KEY') || '';
-    document.getElementById('sbUrl').value = url;
-    document.getElementById('sbKey').value = key;
-    return {url, key};
-  }
+function loadCfg(){
+  const url=localStorage.getItem('SB_URL')||'';
+  const key=localStorage.getItem('SB_KEY')||'';
+  sbUrl.value=url;
+  sbKey.value=key;
+  return{url,key};
+}
 
-  function show(id, on=true){
-    document.getElementById(id).classList.toggle('hide', !on);
-  }
+function show(id,on=true){document.getElementById(id).classList.toggle('hide',!on)}
 
-  async function init(){
-    const {url, key} = loadCfg();
+async function init(){
+  const{url,key}=loadCfg();
+  if(!url||!key){show('cfgCard',true);return}
+  show('cfgCard',false);show('authCard',true);
+  sb=window.supabase.createClient(url,key);
+  const{data:{session}}=await sb.auth.getSession();
+  if(session)afterLogin();
+}
 
-    if(!url || !key){
-      show('cfgCard', true);
-      show('authCard', false);
-      return;
+async function login(){
+  const{error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:pass.value});
+  if(error){authMsg.innerHTML=`<span class="err">${error.message}</span>`;return}
+  afterLogin();
+}
+
+async function logout(){
+  if(sb)await sb.auth.signOut();
+  show('appCard',false);show('fuelCard',false);show('histCard',false);show('authCard',true);
+}
+
+async function afterLogin(){
+  const{data:{user}}=await sb.auth.getUser();
+  const{data:prof}=await sb.from('profiles').select('id,full_name,role').eq('id',user.id).single();
+  myProfile=prof;
+  const{data:vId}=await sb.rpc('my_vehicle_id');
+  myVehicleId=vId||null;
+
+  show('authCard',false);show('appCard',true);
+  show('fuelCard',true);show('histCard',true);
+
+  who.innerHTML=`Zalogowany: <b>${myProfile.full_name}</b>`;
+  occurredAt.value=nowForDateTimeLocal();
+  loadHistory();
+}
+
+async function addFuel(){
+  const occurred=occurredAt.value?new Date(occurredAt.value).toISOString():new Date().toISOString();
+  const{data}=await sb.from('fuel_entries').insert({
+    vehicle_id:myVehicleId,
+    driver_id:myProfile.id,
+    occurred_at:occurred,
+    odometer_km:parseInt(odo.value||'0'),
+    liters:parseFloat(liters.value||'0'),
+    price_per_l:parseFloat(ppl.value||'0')
+  }).select('id').single();
+
+  fuelMsg.innerHTML=`<span class="ok">Zapisano tankowanie.</span>`;
+  loadHistory();
+}
+
+async function loadHistory(){
+  const{data,error}=await sb.from('fuel_entries')
+    .select('occurred_at,odometer_km,liters')
+    .order('occurred_at',{ascending:false})
+    .limit(50);
+
+  if(error){histMsg.innerHTML=`<span class="err">${error.message}</span>`;return}
+  histTbl.classList.remove('hide');
+  histTbl.querySelector('tbody').innerHTML='';
+
+  for(let i=0;i<data.length;i++){
+    const r=data[i];
+    const prev=data[i+1];
+    let l100='';
+    if(prev){
+      const km=r.odometer_km-prev.odometer_km;
+      if(km>0)l100=((r.liters/km)*100).toFixed(2);
     }
-
-    show('cfgCard', false);
-    show('authCard', true);
-
-    sb = window.supabase.createClient(url, key);
-
-    const { data: { session } } = await sb.auth.getSession();
-    if(session) await afterLogin();
+    histTbl.querySelector('tbody').insertAdjacentHTML('beforeend',`
+      <tr>
+        <td>${new Date(r.occurred_at).toLocaleString('pl-PL')}</td>
+        <td>${r.odometer_km}</td>
+        <td>${r.liters}</td>
+        <td><b>${l100}</b></td>
+      </tr>
+    `);
   }
+}
 
-  async function login(){
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('pass').value;
-    const msg = document.getElementById('authMsg');
-    msg.textContent = 'Logowanie...';
-
-    const { error } = await sb.auth.signInWithPassword({ email, password });
-    if(error){
-      msg.innerHTML = `<span class="err">${error.message}</span>`;
-      return;
-    }
-
-    msg.innerHTML = `<span class="ok">Zalogowano.</span>`;
-    await afterLogin();
-  }
-
-  async function logout(){
-    if(sb) await sb.auth.signOut();
-    myProfile = null;
-    myVehicleId = null;
-
-    show('appCard', false);
-    show('fuelCard', false);
-    show('statsCard', false);
-    show('histCard', false);
-    show('authCard', true);
-
-    document.getElementById('authMsg').textContent = '';
-  }
-
-  async function afterLogin(){
-    const { data: { user } } = await sb.auth.getUser();
-
-    const { data: prof, error: perr } = await sb
-      .from('profiles')
-      .select('id, full_name, role')
-      .eq('id', user.id)
-      .single();
-
-    if(perr){
-      document.getElementById('authMsg').innerHTML =
-        `<span class="err">Brak profilu w tabeli profiles dla tego konta.</span>`;
-      return;
-    }
-    myProfile = prof;
-
-    const { data: vId } = await sb.rpc('my_vehicle_id');
-    myVehicleId = vId || null;
-
-    show('authCard', false);
-    show('appCard', true);
-    show('fuelCard', myProfile.role === 'driver');
-    show('statsCard', myProfile.role === 'driver');
-    show('histCard', myProfile.role === 'driver');
-
-    document.getElementById('who').innerHTML =
-      `Zalogowany: <b>${myProfile.full_name}</b> <span class="pill">${myProfile.role}</span>` +
-      (myVehicleId ? ` • pojazd: <span class="pill">${myVehicleId.slice(0,8)}…</span>` : '');
-
-    // auto, ale edytowalne
-    document.getElementById('occurredAt').value = nowForDateTimeLocal();
-
-    if(myProfile.role === 'driver'){
-      await loadStats();
-      await loadHistory();
-    } else {
-      document.getElementById('appCard').insertAdjacentHTML('beforeend',
-        `<div class="muted" style="margin-top:8px">Admin panel rozbudujemy za chwilę (pojazdy, przypisania, serwis).</div>`
-      );
-    }
-  }
-
-  async function addFuel(){
-    const fuelMsg = document.getElementById('fuelMsg');
-    fuelMsg.textContent = 'Zapisywanie...';
-
-    // bierzemy z pola (edytowalne). jeśli puste -> teraz
-    const occurredAtInput = document.getElementById('occurredAt').value;
-    const occurred_at = occurredAtInput
-      ? new Date(occurredAtInput).toISOString()
-      : new Date().toISOString();
-
-    const odometer_km = parseInt(document.getElementById('odo').value || '0', 10);
-    const liters = parseFloat(document.getElementById('liters').value || '0');
-    const price_per_l = parseFloat(document.getElementById('ppl').value || '0');
-
-    if(!odometer_km || liters <= 0){
-      fuelMsg.innerHTML = `<span class="err">Uzupełnij licznik i litry.</span>`;
-      return;
-    }
-
-    const { data, error } = await sb
-      .from('fuel_entries')
-      .insert({
-        vehicle_id: myVehicleId,
-        driver_id: myProfile.id,
-        occurred_at,
-        odometer_km,
-        liters,
-        price_per_l
-      })
-      .select('id')
-      .single();
-
-    if(error){
-      fuelMsg.innerHTML = `<span class="err">${error.message}</span>`;
-      return;
-    }
-
-    const fuelEntryId = data.id;
-
-    const odoFile = document.getElementById('photoOdo').files[0] || null;
-    const recFile = document.getElementById('photoRec').files[0] || null;
-
-    let odometer_photo = null, receipt_photo = null;
-
-    try{
-      if(odoFile){
-        const path = `${myVehicleId}/odometer/${fuelEntryId}.jpg`;
-        const up = await sb.storage.from('fuel-photos').upload(path, odoFile, { upsert:false });
-        if(up.error) throw up.error;
-        odometer_photo = path;
-      }
-      if(recFile){
-        const path = `${myVehicleId}/receipt/${fuelEntryId}.jpg`;
-        const up = await sb.storage.from('fuel-photos').upload(path, recFile, { upsert:false });
-        if(up.error) throw up.error;
-        receipt_photo = path;
-      }
-    }catch(e){
-      fuelMsg.innerHTML = `<span class="err">Tankowanie zapisane, ale upload zdjęcia nie wyszedł: ${e.message}</span>`;
-    }
-
-    if(odometer_photo || receipt_photo){
-      const patch = {};
-      if(odometer_photo) patch.odometer_photo = odometer_photo;
-      if(receipt_photo) patch.receipt_photo = receipt_photo;
-
-      const up2 = await sb
-        .from('fuel_entries')
-        .update(patch)
-        .eq('id', fuelEntryId);
-
-      if(up2.error){
-        fuelMsg.innerHTML = `<span class="err">Tankowanie zapisane, ale nie udało się dopiąć zdjęć do rekordu: ${up2.error.message}</span>`;
-        return;
-      }
-    }
-
-    fuelMsg.innerHTML =
-      `<span class="ok">Zapisano tankowanie.</span>` +
-      (odometer_photo ? ` licznik✅` : '') + (receipt_photo ? ` WZ✅` : '');
-
-    document.getElementById('odo').value = '';
-    document.getElementById('liters').value = '';
-    document.getElementById('ppl').value = '';
-    calcCost();
-    document.getElementById('photoOdo').value = '';
-    document.getElementById('photoRec').value = '';
-    document.getElementById('occurredAt').value = nowForDateTimeLocal();
-
-    await loadStats();
-    await loadHistory();
-  }
-
-  async function loadStats(){
-    const msg = document.getElementById('statsMsg');
-    msg.textContent = 'Ładowanie...';
-    const tbl = document.getElementById('statsTbl');
-    const body = tbl.querySelector('tbody');
-    body.innerHTML = '';
-
-    const { data, error } = await sb
-      .from('monthly_fuel_stats')
-      .select('month_start, liters_in_month, km_in_month, avg_l_per_100km')
-      .order('month_start', { ascending: false })
-      .limit(24);
-
-    if(error){
-      msg.innerHTML = `<span class="err">${error.message}</span>`;
-      tbl.classList.add('hide');
-      return;
-    }
-
-    msg.textContent = '';
-    tbl.classList.remove('hide');
-
-    for(const r of (data || [])){
-      const m = String(r.month_start).slice(0,7);
-      body.insertAdjacentHTML('beforeend', `
-        <tr>
-          <td>${m}</td>
-          <td>${(r.liters_in_month ?? '').toString()}</td>
-          <td>${(r.km_in_month ?? '').toString()}</td>
-          <td><b>${(r.avg_l_per_100km ?? '').toString()}</b></td>
-        </tr>
-      `);
-    }
-  }
-
-  async function loadHistory(){
-    const msg = document.getElementById('histMsg');
-    msg.textContent = 'Ładowanie...';
-    const tbl = document.getElementById('histTbl');
-    const body = tbl.querySelector('tbody');
-    body.innerHTML = '';
-
-    const { data, error } = await sb
-      .from('fuel_entries')
-      .select('occurred_at, odometer_km, liters, price_per_l, total_cost')
-      .order('occurred_at', { ascending: false }) // najnowsze na górze
-      .limit(50);
-
-    if(error){
-      msg.innerHTML = `<span class="err">${error.message}</span>`;
-      tbl.classList.add('hide');
-      return;
-    }
-
-    msg.textContent = '';
-    tbl.classList.remove('hide');
-
-    const rows = (data || []);
-
-    for(let i = 0; i < rows.length; i++){
-      const r = rows[i];
-      const prev = rows[i + 1]; // starsze tankowanie
-
-      const d = new Date(r.occurred_at);
-      const ds = d.toLocaleString('pl-PL');
-
-      let l100 = '';
-      if(prev){
-        const km = r.odometer_km - prev.odometer_km;
-        if(km > 0){
-          l100 = ((Number(r.liters) / km) * 100).toFixed(2);
-        }
-      }
-
-      body.insertAdjacentHTML('beforeend', `
-        <tr>
-          <td>${ds}</td>
-          <td>${r.odometer_km}</td>
-          <td>${r.liters}</td>
-          <td>${r.price_per_l}</td>
-          <td><b>${r.total_cost}</b></td>
-          <td><b>${l100}</b></td>
-        </tr>
-      `);
-    }
-  }
-
-  init();
+init();
 </script>
 </body>
 </html>
