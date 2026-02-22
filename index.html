@@ -246,10 +246,13 @@
 
   async function afterLogin(){
     // pobierz profil (rola + nazwa)
-    const { data: prof, error: perr } = await sb
-      .from('profiles')
-      .select('id, full_name, role')
-      .single();
+    const { data: { user } } = await sb.auth.getUser();
+
+const { data: prof, error: perr } = await sb
+  .from('profiles')
+  .select('id, full_name, role')
+  .eq('id', user.id)
+  .single();
 
     if(perr){
       document.getElementById('authMsg').innerHTML =
